@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false          # universe ตัวนึงพัง อีก 2 ตัวยังเดินต่อ
       matrix:
-        universe: [nasdaq100, sp500, russell2000]
+        universe: [nasdaq100, sp500, sp400, sp600]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -54,7 +54,7 @@ jobs:
       - name: Assemble docs/ + index.json
         run: |
           mkdir -p docs
-          for u in nasdaq100 sp500 russell2000; do
+          for u in nasdaq100 sp500 sp400 sp600; do
             f="_artifacts/result-$u/$u.json"
             if [ -f "$f" ]; then cp "$f" "docs/$u.json"; fi
           done

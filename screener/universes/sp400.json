@@ -1,0 +1,9 @@
+{
+ "universe": "sp400",
+ "count": 20,
+ "note": "SEED เท่านั้น — รัน scripts/update_universes.py (หรือ workflow update-universes) เพื่อเติมครบ ~400 ตัวจาก Wikipedia (S&P MidCap 400)",
+ "symbols": [
+  "FIX","EME","CSL","WSO","RS","JLL","WING","BLD","MANH","SAIA",
+  "DUOL","THC","CW","WSM","MEDP","CASY","EXP","OC","GGG","RGLD"
+ ]
+}

@@ -107,7 +107,7 @@ def write_output(universe, results, scanned):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--universe", required=True,
-                    choices=["nasdaq100", "sp500", "russell2000"])
+                    choices=["nasdaq100", "sp500", "sp400", "sp600"])
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--throttle", type=float, default=0.25)
     args = ap.parse_args()

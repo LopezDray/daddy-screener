@@ -1,0 +1,9 @@
+{
+ "universe": "sp600",
+ "count": 20,
+ "note": "SEED เท่านั้น — รัน scripts/update_universes.py (หรือ workflow update-universes) เพื่อเติมครบ ~600 ตัวจาก Wikipedia (S&P SmallCap 600)",
+ "symbols": [
+  "MLI","ANF","BOOT","SPSC","AWI","IDCC","ATGE","CORT","HALO","SFBS",
+  "AEIS","MMSI","PIPR","EXLS","CALM","SHOO","AWR","KTB","GFF","RMBS"
+ ]
+}

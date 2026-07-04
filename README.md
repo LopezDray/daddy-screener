@@ -1,6 +1,6 @@
 # daddy-screener
 
-Compute node ของ **daddyinvestor.net** — สแกนหุ้น 3 universe (NASDAQ100 + S&P500 + Russell2000)
+Compute node ของ **daddyinvestor.net** — สแกนหุ้น 4 universe (NASDAQ100 + S&P 500/400/600)
 หา setup **"Breakout เพื่อถือ + ออมยาว (DCA)"** โดยผสม Stan Weinstein Stage Analysis กับ Volume Profile
 
 รันบน **GitHub Actions ของ public repo** → ฟรีไม่จำกัดนาที · ดึงราคาจาก Yahoo Finance (ฟรี ไม่ใช้ key)

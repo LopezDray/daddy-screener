@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DOCS = os.path.join(ROOT, "docs")
-UNIVERSES = ["nasdaq100", "sp500", "russell2000"]
+UNIVERSES = ["nasdaq100", "sp500", "sp400", "sp600"]
 
 
 def main():

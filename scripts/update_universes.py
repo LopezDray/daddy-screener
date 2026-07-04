@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 """
 รีเฟรชรายชื่อหุ้นของแต่ละ universe (เดือนละครั้ง + trigger มือได้ตอนมี ad-hoc change) — $0 ไม่ใช้ FMP
-  NASDAQ100   → Wikipedia Nasdaq-100 components (เปลี่ยนกลางปีได้ ad-hoc → ต้อง auto)
-  S&P500      → Wikipedia constituents table
-  Russell2000 → iShares IWM holdings CSV (public)
+ทุก universe ดึงจาก Wikipedia (reliable, ไม่โดน datacenter-IP block เหมือน iShares)
+  NASDAQ100 → Wikipedia Nasdaq-100 components (large/growth)
+  S&P 500   → large cap  | S&P 400 → mid cap | S&P 600 → small cap
+  (S&P 500+400+600 = S&P Composite 1500 = คลุมตลาดสหรัฐแบบคัดกรอง)
 
 Guard: ถ้า fetch/parse ได้จำนวนน้อยผิดปกติ → คงไฟล์เดิมไว้ (ไม่ทับด้วยของพัง)
 """
 
-import csv
-import io
 import json
 import os
 import re
@@ -20,109 +19,82 @@ UNIVERSE_DIR = os.path.join(ROOT, "screener", "universes")
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; daddy-screener/1.0)"}
 
 NASDAQ100_URL = "https://en.wikipedia.org/wiki/Nasdaq-100"
-SP500_URL = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
-IWM_CSV_URL = ("https://www.ishares.com/us/products/239710/"
-               "ishares-russell-2000-etf/1467271812596.ajax"
-               "?fileType=csv&fileName=IWM_holdings&dataType=fund")
+SP_URLS = {
+    "sp500": "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",
+    "sp400": "https://en.wikipedia.org/wiki/List_of_S%26P_400_companies",
+    "sp600": "https://en.wikipedia.org/wiki/List_of_S%26P_600_companies",
+}
+FLOORS = {"nasdaq100": 90, "sp500": 400, "sp400": 300, "sp600": 450}
 
 
-BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-              "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
-
-
-def _get(url, ua=None, extra_headers=None):
-    headers = dict(HEADERS)
-    if ua:
-        headers["User-Agent"] = ua
-    if extra_headers:
-        headers.update(extra_headers)
-    req = urllib.request.Request(url, headers=headers)
+def _get(url):
+    req = urllib.request.Request(url, headers=HEADERS)
     with urllib.request.urlopen(req, timeout=45) as resp:
         return resp.read().decode("utf-8-sig", errors="replace")  # utf-8-sig = strip BOM
 
 
+def _cells(row):
+    return re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", row, re.S)
+
+
+def _text(cell):
+    return re.sub(r"<[^>]+>", "", cell).strip().replace("&amp;", "&")
+
+
+def _is_ticker(s):
+    return bool(re.fullmatch(r"[A-Z][A-Z.\-]{0,6}", s))
+
+
 def fetch_nasdaq100():
-    """ดึง NASDAQ-100 components จาก Wikipedia — ทน <tr class=...>, header-aware + column fallback"""
+    """Wikipedia Nasdaq-100 — ทน <tr class=...>, header-aware + column-scan fallback, เลือกตาราง ~100"""
     html = _get(NASDAQ100_URL)
     tables = re.findall(r"<table[^>]*wikitable[^>]*>.*?</table>", html, re.S)
-    best = []
+    picks = []
     for table in tables:
-        rows = re.findall(r"<tr[^>]*>(.*?)</tr>", table, re.S)     # รับ <tr ...> ด้วย
-        if len(rows) < 50:                                        # components table ~100 แถว
+        rows = re.findall(r"<tr[^>]*>(.*?)</tr>", table, re.S)
+        if len(rows) < 50:
             continue
-        header = [re.sub(r"<[^>]+>", "", h).strip().lower()
-                  for h in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", rows[0], re.S)]
+        header = [_text(h).lower() for h in _cells(rows[0])]
         tcol = next((i for i, h in enumerate(header) if "ticker" in h or "symbol" in h), None)
         out = []
         for r in rows[1:]:
-            cells = re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", r, re.S)
+            cells = _cells(r)
             if not cells:
                 continue
-            # รู้คอลัมน์ ticker → ใช้เลย · ไม่รู้ → สแกนทุก cell หา ticker แรก
             scan = [cells[tcol]] if (tcol is not None and len(cells) > tcol) else cells
             for cell in scan:
-                raw = re.sub(r"<[^>]+>", "", cell).strip().replace("&amp;", "&")
-                if re.fullmatch(r"[A-Z][A-Z.\-]{0,6}", raw):
+                raw = _text(cell)
+                if _is_ticker(raw):
                     out.append({"symbol": raw.replace(".", "-"), "sector": None})
                     break
-        if len(out) > len(best):
-            best = out                                            # เลือกตารางที่ได้ ticker เยอะสุด
+        if out:
+            picks.append(_dedupe(out))
+    # NASDAQ-100 มี ~101 หลักทรัพย์ → เลือกตารางที่ count ∈ [90,120] (กันตาราง "การเปลี่ยนแปลง" ที่ยาวกว่า)
+    in_band = [p for p in picks if 90 <= len(p) <= 120]
+    best = max(in_band, key=len) if in_band else []
     if not best:
-        print(f"[universe] nasdaq100 debug: no ticker table · tables={len(tables)} · bytes={len(html)}")
-    return _dedupe(best)
+        print(f"[universe] nasdaq100 debug: no ~100 table · counts={[len(p) for p in picks]}")
+    return best
 
 
-def fetch_sp500():
-    html = _get(SP500_URL)
-    # ตัดเอาเฉพาะตาราง constituents ตัวแรก แล้วดึง ticker จากคอลัมน์แรกของแต่ละแถว
+def fetch_sp_index(name):
+    """generic S&P constituents (500/400/600) — ตาราง id=constituents, header-aware หา symbol column"""
+    html = _get(SP_URLS[name])
     m = re.search(r'id="constituents".*?</table>', html, re.S)
     table = m.group(0) if m else html
-    rows = re.findall(r"<tr>(.*?)</tr>", table, re.S)
-    out = []
-    for r in rows:
-        cells = re.findall(r"<td.*?>(.*?)</td>", r, re.S)
-        if not cells:
-            continue
-        # ticker อยู่ใน cell แรก อาจห่อด้วย <a>
-        raw = re.sub(r"<[^>]+>", "", cells[0]).strip()
-        raw = raw.replace("&amp;", "&")
-        if re.fullmatch(r"[A-Z][A-Z.\-]{0,6}", raw):
-            out.append({"symbol": raw.replace(".", "-"), "sector": None})  # BRK.B → BRK-B (Yahoo)
-    # sector: คอลัมน์ GICS Sector (index 2) ถ้ามี
-    return _dedupe(out)
-
-
-def fetch_russell2000():
-    # iShares คืน HTML ถ้าขาด Referer/Accept → ใส่ browser UA + Referer หน้ากอง + Accept csv
-    csv_text = _get(IWM_CSV_URL, ua=BROWSER_UA, extra_headers={
-        "Referer": "https://www.ishares.com/us/products/239710/ishares-russell-2000-etf/",
-        "Accept": "text/csv,application/csv,text/plain,*/*",
-    })
-    lines = csv_text.splitlines()
-    # หา header row: บรรทัดที่มี field ชื่อ "ticker" (ยืดหยุ่น — มี/ไม่มี quote, อยู่คอลัมน์ไหนก็ได้)
-    hdr_idx = None
-    for i, ln in enumerate(lines):
-        fields = [c.strip().strip('"').lower() for c in ln.split(",")]
-        if "ticker" in fields:
-            hdr_idx = i
-            break
-    if hdr_idx is None:
-        # debug: log ให้รอบหน้าเห็นว่า iShares ตอบอะไรมา (HTML block? empty?)
-        print(f"[universe] russell2000 debug: no 'ticker' header · bytes={len(csv_text)} · "
-              f"first160={csv_text[:160]!r}")
+    rows = re.findall(r"<tr[^>]*>(.*?)</tr>", table, re.S)
+    if not rows:
         return []
-    reader = csv.DictReader(io.StringIO("\n".join(lines[hdr_idx:])))
+    header = [_text(h).lower() for h in _cells(rows[0])]
+    scol = next((i for i, h in enumerate(header) if "symbol" in h or "ticker" in h), 0)
     out = []
-    for row in reader:
-        tk = (row.get("Ticker") or row.get("ticker") or "").strip().strip('"')
-        asset = (row.get("Asset Class") or "").strip().strip('"')
-        if not tk or tk == "-":
+    for r in rows[1:]:
+        cells = _cells(r)
+        if len(cells) <= scol:
             continue
-        if asset and asset.lower() != "equity":     # ตัด cash/derivative
-            continue
-        if re.fullmatch(r"[A-Z][A-Z.\-]{0,6}", tk):
-            out.append({"symbol": tk.replace(".", "-"), "sector": None})
-    print(f"[universe] russell2000 debug: header@line{hdr_idx} · parsed={len(out)} tickers")
+        raw = _text(cells[scol])
+        if _is_ticker(raw):
+            out.append({"symbol": raw.replace(".", "-"), "sector": None})  # BRK.B → BRK-B (Yahoo)
     return _dedupe(out)
 
 
@@ -143,35 +115,21 @@ def _write(name, symbols):
     print(f"[universe] wrote {name}: {len(symbols)} symbols")
 
 
-def _min_ok(name, got):
-    floor = {"nasdaq100": 90, "sp500": 400, "russell2000": 1000}[name]
-    if got < floor:
-        print(f"[universe] SKIP {name}: got {got} < {floor} (คงไฟล์เดิม กันทับของพัง)")
-        return False
-    return True
+def _refresh(name, fetcher):
+    try:
+        syms = fetcher()
+        if len(syms) < FLOORS[name]:
+            print(f"[universe] SKIP {name}: got {len(syms)} < {FLOORS[name]} (คงไฟล์เดิม กันทับของพัง)")
+            return
+        _write(name, syms)
+    except Exception as e:  # noqa: BLE001
+        print(f"[universe] {name} error: {e}")
 
 
 def main():
-    try:
-        nd = fetch_nasdaq100()
-        if _min_ok("nasdaq100", len(nd)):
-            _write("nasdaq100", nd)
-    except Exception as e:  # noqa: BLE001
-        print(f"[universe] nasdaq100 error: {e}")
-
-    try:
-        sp = fetch_sp500()
-        if _min_ok("sp500", len(sp)):
-            _write("sp500", sp)
-    except Exception as e:  # noqa: BLE001
-        print(f"[universe] sp500 error: {e}")
-
-    try:
-        ru = fetch_russell2000()
-        if _min_ok("russell2000", len(ru)):
-            _write("russell2000", ru)
-    except Exception as e:  # noqa: BLE001
-        print(f"[universe] russell2000 error: {e}")
+    _refresh("nasdaq100", fetch_nasdaq100)
+    for name in ("sp500", "sp400", "sp600"):
+        _refresh(name, lambda n=name: fetch_sp_index(n))
 
 
 if __name__ == "__main__":
