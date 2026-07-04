@@ -1,0 +1,11 @@
+{
+ "universe": "sp500",
+ "count": 40,
+ "note": "SEED เท่านั้น — รัน scripts/update_universes.py (หรือ workflow update-universes) เพื่อเติมครบ ~503 ตัวจาก Wikipedia",
+ "symbols": [
+  "AAPL","MSFT","NVDA","AMZN","META","GOOGL","BRK-B","LLY","AVGO","JPM",
+  "TSLA","UNH","XOM","V","PG","MA","JNJ","HD","COST","ABBV",
+  "MRK","CVX","WMT","KO","PEP","BAC","ADBE","CRM","MCD","NFLX",
+  "TMO","ORCL","ACN","LIN","ABT","CSCO","DHR","WFC","AMD","TXN"
+ ]
+}

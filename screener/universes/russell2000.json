@@ -1,0 +1,9 @@
+{
+ "universe": "russell2000",
+ "count": 20,
+ "note": "SEED เท่านั้น — รัน scripts/update_universes.py (หรือ workflow update-universes) เพื่อเติมครบ ~1,950 ตัวจาก iShares IWM CSV",
+ "symbols": [
+  "SMCI","FTAI","INSM","SFM","HOOD","MSTR","CVLT","APPF","ANF","CROX",
+  "MMSI","RMBS","ELF","CELH","FN","AIT","SPSC","CORT","HALO","BMI"
+ ]
+}

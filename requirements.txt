@@ -1,0 +1,2 @@
+# ไม่มี dependency — stdlib ล้วน (urllib/json/csv/re)
+# CI ติดตั้งเร็ว + ไม่มี supply-chain risk

@@ -1,0 +1,32 @@
+name: Update Universes (monthly)
+
+on:
+  schedule:
+    - cron: '0 6 1 * *'        # วันที่ 1 ของเดือน 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Refresh S&P500 + Russell2000 lists
+        run: python scripts/update_universes.py
+      - name: Commit & push
+        run: |
+          git config user.name  "daddy-screener-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add screener/universes/
+          if git diff --cached --quiet; then
+            echo "no changes"
+          else
+            git commit -m "data: refresh universe constituents $(date -u +%F)"
+            git push
+          fi

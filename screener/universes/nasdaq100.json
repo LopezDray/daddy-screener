@@ -1,0 +1,17 @@
+{
+ "universe": "nasdaq100",
+ "count": 100,
+ "note": "hardcode — เสถียร ไม่ต้อง auto-refresh (update_universes.py ข้ามตัวนี้)",
+ "symbols": [
+  "AAPL","MSFT","NVDA","AMZN","META","GOOGL","GOOG","TSLA","AVGO","COST",
+  "NFLX","AMD","ASML","PEP","ADBE","CSCO","QCOM","TMUS","INTU","TXN",
+  "AMGN","HON","SBUX","ISRG","VRTX","AMAT","BKNG","LRCX","GILD","ADI",
+  "PANW","MU","REGN","KLAC","MRVL","MDLZ","CRWD","SNPS","CDNS","CTAS",
+  "FTNT","NXPI","ORLY","CEG","MAR","PCAR","MCHP","PAYX","ROST","ADP",
+  "MNST","CHTR","WDAY","ODFL","FAST","VRSK","CPRT","DXCM","KDP","IDXX",
+  "EXC","BKR","CTSH","TEAM","GEHC","ON","TTWO","XEL","ZS","ANSS",
+  "GFS","FANG","CDW","DLTR","BIIB","CSGP","ILMN","MDB","SIRI","WBA",
+  "RIVN","LCID","DDOG","ABNB","ZM","OKTA","DOCU","PTON","HOOD","COIN",
+  "APP","AXON","SMCI","DECK","MELI","PYPL","EBAY","WBD","FOX","FOXA"
+ ]
+}
