@@ -30,39 +30,45 @@ BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
               "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
 
 
-def _get(url, ua=None):
+def _get(url, ua=None, extra_headers=None):
     headers = dict(HEADERS)
     if ua:
         headers["User-Agent"] = ua
+    if extra_headers:
+        headers.update(extra_headers)
     req = urllib.request.Request(url, headers=headers)
     with urllib.request.urlopen(req, timeout=45) as resp:
         return resp.read().decode("utf-8-sig", errors="replace")  # utf-8-sig = strip BOM
 
 
 def fetch_nasdaq100():
-    """ดึง NASDAQ-100 components จาก Wikipedia — header-aware (หาคอลัมน์ Ticker เอง)"""
+    """ดึง NASDAQ-100 components จาก Wikipedia — ทน <tr class=...>, header-aware + column fallback"""
     html = _get(NASDAQ100_URL)
     tables = re.findall(r"<table[^>]*wikitable[^>]*>.*?</table>", html, re.S)
     best = []
     for table in tables:
-        rows = re.findall(r"<tr>(.*?)</tr>", table, re.S)
-        if not rows:
+        rows = re.findall(r"<tr[^>]*>(.*?)</tr>", table, re.S)     # รับ <tr ...> ด้วย
+        if len(rows) < 50:                                        # components table ~100 แถว
             continue
         header = [re.sub(r"<[^>]+>", "", h).strip().lower()
-                  for h in re.findall(r"<th.*?>(.*?)</th>", rows[0], re.S)]
+                  for h in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", rows[0], re.S)]
         tcol = next((i for i, h in enumerate(header) if "ticker" in h or "symbol" in h), None)
-        if tcol is None:
-            continue
         out = []
         for r in rows[1:]:
-            cells = re.findall(r"<t[dh].*?>(.*?)</t[dh]>", r, re.S)
-            if len(cells) <= tcol:
+            cells = re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", r, re.S)
+            if not cells:
                 continue
-            raw = re.sub(r"<[^>]+>", "", cells[tcol]).strip().replace("&amp;", "&")
-            if re.fullmatch(r"[A-Z][A-Z.\-]{0,6}", raw):
-                out.append({"symbol": raw.replace(".", "-"), "sector": None})
+            # รู้คอลัมน์ ticker → ใช้เลย · ไม่รู้ → สแกนทุก cell หา ticker แรก
+            scan = [cells[tcol]] if (tcol is not None and len(cells) > tcol) else cells
+            for cell in scan:
+                raw = re.sub(r"<[^>]+>", "", cell).strip().replace("&amp;", "&")
+                if re.fullmatch(r"[A-Z][A-Z.\-]{0,6}", raw):
+                    out.append({"symbol": raw.replace(".", "-"), "sector": None})
+                    break
         if len(out) > len(best):
-            best = out            # เลือกตารางที่ได้ ticker เยอะสุด (= components table)
+            best = out                                            # เลือกตารางที่ได้ ticker เยอะสุด
+    if not best:
+        print(f"[universe] nasdaq100 debug: no ticker table · tables={len(tables)} · bytes={len(html)}")
     return _dedupe(best)
 
 
@@ -87,8 +93,11 @@ def fetch_sp500():
 
 
 def fetch_russell2000():
-    # iShares บล็อก bot UA บ่อย → ใช้ browser UA เต็ม · BOM ถูก strip ใน _get แล้ว
-    csv_text = _get(IWM_CSV_URL, ua=BROWSER_UA)
+    # iShares คืน HTML ถ้าขาด Referer/Accept → ใส่ browser UA + Referer หน้ากอง + Accept csv
+    csv_text = _get(IWM_CSV_URL, ua=BROWSER_UA, extra_headers={
+        "Referer": "https://www.ishares.com/us/products/239710/ishares-russell-2000-etf/",
+        "Accept": "text/csv,application/csv,text/plain,*/*",
+    })
     lines = csv_text.splitlines()
     # หา header row: บรรทัดที่มี field ชื่อ "ticker" (ยืดหยุ่น — มี/ไม่มี quote, อยู่คอลัมน์ไหนก็ได้)
     hdr_idx = None
