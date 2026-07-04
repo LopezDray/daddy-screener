@@ -1,9 +1,2410 @@
 {
  "universe": "sp600",
- "count": 20,
- "note": "SEED เท่านั้น — รัน scripts/update_universes.py (หรือ workflow update-universes) เพื่อเติมครบ ~600 ตัวจาก Wikipedia (S&P SmallCap 600)",
+ "count": 601,
  "symbols": [
-  "MLI","ANF","BOOT","SPSC","AWI","IDCC","ATGE","CORT","HALO","SFBS",
-  "AEIS","MMSI","PIPR","EXLS","CALM","SHOO","AWR","KTB","GFF","RMBS"
+  {
+   "symbol": "AAMI",
+   "sector": null
+  },
+  {
+   "symbol": "AAP",
+   "sector": null
+  },
+  {
+   "symbol": "AAT",
+   "sector": null
+  },
+  {
+   "symbol": "ABCB",
+   "sector": null
+  },
+  {
+   "symbol": "ABG",
+   "sector": null
+  },
+  {
+   "symbol": "ABM",
+   "sector": null
+  },
+  {
+   "symbol": "ABR",
+   "sector": null
+  },
+  {
+   "symbol": "ACA",
+   "sector": null
+  },
+  {
+   "symbol": "ACAD",
+   "sector": null
+  },
+  {
+   "symbol": "ACHC",
+   "sector": null
+  },
+  {
+   "symbol": "ACIW",
+   "sector": null
+  },
+  {
+   "symbol": "ACLS",
+   "sector": null
+  },
+  {
+   "symbol": "ACMR",
+   "sector": null
+  },
+  {
+   "symbol": "ACT",
+   "sector": null
+  },
+  {
+   "symbol": "ADAM",
+   "sector": null
+  },
+  {
+   "symbol": "ADEA",
+   "sector": null
+  },
+  {
+   "symbol": "ADMA",
+   "sector": null
+  },
+  {
+   "symbol": "ADNT",
+   "sector": null
+  },
+  {
+   "symbol": "ADT",
+   "sector": null
+  },
+  {
+   "symbol": "ADUS",
+   "sector": null
+  },
+  {
+   "symbol": "AEO",
+   "sector": null
+  },
+  {
+   "symbol": "AESI",
+   "sector": null
+  },
+  {
+   "symbol": "AGNT",
+   "sector": null
+  },
+  {
+   "symbol": "AGO",
+   "sector": null
+  },
+  {
+   "symbol": "AGX",
+   "sector": null
+  },
+  {
+   "symbol": "AGYS",
+   "sector": null
+  },
+  {
+   "symbol": "AHCO",
+   "sector": null
+  },
+  {
+   "symbol": "AIN",
+   "sector": null
+  },
+  {
+   "symbol": "AIR",
+   "sector": null
+  },
+  {
+   "symbol": "AKR",
+   "sector": null
+  },
+  {
+   "symbol": "ALG",
+   "sector": null
+  },
+  {
+   "symbol": "ALGT",
+   "sector": null
+  },
+  {
+   "symbol": "ALHC",
+   "sector": null
+  },
+  {
+   "symbol": "ALKS",
+   "sector": null
+  },
+  {
+   "symbol": "ALRM",
+   "sector": null
+  },
+  {
+   "symbol": "AMN",
+   "sector": null
+  },
+  {
+   "symbol": "AMPH",
+   "sector": null
+  },
+  {
+   "symbol": "AMR",
+   "sector": null
+  },
+  {
+   "symbol": "AMRX",
+   "sector": null
+  },
+  {
+   "symbol": "AMSF",
+   "sector": null
+  },
+  {
+   "symbol": "AMTM",
+   "sector": null
+  },
+  {
+   "symbol": "ANDE",
+   "sector": null
+  },
+  {
+   "symbol": "ANIP",
+   "sector": null
+  },
+  {
+   "symbol": "AORT",
+   "sector": null
+  },
+  {
+   "symbol": "AOSL",
+   "sector": null
+  },
+  {
+   "symbol": "APAM",
+   "sector": null
+  },
+  {
+   "symbol": "APLE",
+   "sector": null
+  },
+  {
+   "symbol": "APOG",
+   "sector": null
+  },
+  {
+   "symbol": "ARCB",
+   "sector": null
+  },
+  {
+   "symbol": "ARLO",
+   "sector": null
+  },
+  {
+   "symbol": "AROC",
+   "sector": null
+  },
+  {
+   "symbol": "ARR",
+   "sector": null
+  },
+  {
+   "symbol": "ASO",
+   "sector": null
+  },
+  {
+   "symbol": "ASTE",
+   "sector": null
+  },
+  {
+   "symbol": "ASTH",
+   "sector": null
+  },
+  {
+   "symbol": "ATEN",
+   "sector": null
+  },
+  {
+   "symbol": "ATMU",
+   "sector": null
+  },
+  {
+   "symbol": "AUB",
+   "sector": null
+  },
+  {
+   "symbol": "AVA",
+   "sector": null
+  },
+  {
+   "symbol": "AVNS",
+   "sector": null
+  },
+  {
+   "symbol": "AWI",
+   "sector": null
+  },
+  {
+   "symbol": "AWR",
+   "sector": null
+  },
+  {
+   "symbol": "AX",
+   "sector": null
+  },
+  {
+   "symbol": "AZTA",
+   "sector": null
+  },
+  {
+   "symbol": "AZZ",
+   "sector": null
+  },
+  {
+   "symbol": "BANC",
+   "sector": null
+  },
+  {
+   "symbol": "BANF",
+   "sector": null
+  },
+  {
+   "symbol": "BANR",
+   "sector": null
+  },
+  {
+   "symbol": "BBT",
+   "sector": null
+  },
+  {
+   "symbol": "BCC",
+   "sector": null
+  },
+  {
+   "symbol": "BCPC",
+   "sector": null
+  },
+  {
+   "symbol": "BFAM",
+   "sector": null
+  },
+  {
+   "symbol": "BFH",
+   "sector": null
+  },
+  {
+   "symbol": "BFS",
+   "sector": null
+  },
+  {
+   "symbol": "BGC",
+   "sector": null
+  },
+  {
+   "symbol": "BHE",
+   "sector": null
+  },
+  {
+   "symbol": "BJRI",
+   "sector": null
+  },
+  {
+   "symbol": "BKE",
+   "sector": null
+  },
+  {
+   "symbol": "BKU",
+   "sector": null
+  },
+  {
+   "symbol": "BL",
+   "sector": null
+  },
+  {
+   "symbol": "BLFS",
+   "sector": null
+  },
+  {
+   "symbol": "BMI",
+   "sector": null
+  },
+  {
+   "symbol": "BNL",
+   "sector": null
+  },
+  {
+   "symbol": "BOH",
+   "sector": null
+  },
+  {
+   "symbol": "BOOT",
+   "sector": null
+  },
+  {
+   "symbol": "BOX",
+   "sector": null
+  },
+  {
+   "symbol": "BRC",
+   "sector": null
+  },
+  {
+   "symbol": "BTSG",
+   "sector": null
+  },
+  {
+   "symbol": "BTU",
+   "sector": null
+  },
+  {
+   "symbol": "BXMT",
+   "sector": null
+  },
+  {
+   "symbol": "CABO",
+   "sector": null
+  },
+  {
+   "symbol": "CAG",
+   "sector": null
+  },
+  {
+   "symbol": "CAKE",
+   "sector": null
+  },
+  {
+   "symbol": "CALM",
+   "sector": null
+  },
+  {
+   "symbol": "CALX",
+   "sector": null
+  },
+  {
+   "symbol": "CALY",
+   "sector": null
+  },
+  {
+   "symbol": "CARG",
+   "sector": null
+  },
+  {
+   "symbol": "CASH",
+   "sector": null
+  },
+  {
+   "symbol": "CATY",
+   "sector": null
+  },
+  {
+   "symbol": "CBRL",
+   "sector": null
+  },
+  {
+   "symbol": "CBU",
+   "sector": null
+  },
+  {
+   "symbol": "CC",
+   "sector": null
+  },
+  {
+   "symbol": "CCOI",
+   "sector": null
+  },
+  {
+   "symbol": "CCS",
+   "sector": null
+  },
+  {
+   "symbol": "CE",
+   "sector": null
+  },
+  {
+   "symbol": "CENT",
+   "sector": null
+  },
+  {
+   "symbol": "CENTA",
+   "sector": null
+  },
+  {
+   "symbol": "CENX",
+   "sector": null
+  },
+  {
+   "symbol": "CERT",
+   "sector": null
+  },
+  {
+   "symbol": "CFFN",
+   "sector": null
+  },
+  {
+   "symbol": "CHCO",
+   "sector": null
+  },
+  {
+   "symbol": "CHEF",
+   "sector": null
+  },
+  {
+   "symbol": "CLB",
+   "sector": null
+  },
+  {
+   "symbol": "CLSK",
+   "sector": null
+  },
+  {
+   "symbol": "CNK",
+   "sector": null
+  },
+  {
+   "symbol": "CNMD",
+   "sector": null
+  },
+  {
+   "symbol": "CNR",
+   "sector": null
+  },
+  {
+   "symbol": "CNS",
+   "sector": null
+  },
+  {
+   "symbol": "CNXN",
+   "sector": null
+  },
+  {
+   "symbol": "COCO",
+   "sector": null
+  },
+  {
+   "symbol": "COHU",
+   "sector": null
+  },
+  {
+   "symbol": "COLL",
+   "sector": null
+  },
+  {
+   "symbol": "CON",
+   "sector": null
+  },
+  {
+   "symbol": "CORT",
+   "sector": null
+  },
+  {
+   "symbol": "CPF",
+   "sector": null
+  },
+  {
+   "symbol": "CPK",
+   "sector": null
+  },
+  {
+   "symbol": "CPRX",
+   "sector": null
+  },
+  {
+   "symbol": "CRC",
+   "sector": null
+  },
+  {
+   "symbol": "CRGY",
+   "sector": null
+  },
+  {
+   "symbol": "CRI",
+   "sector": null
+  },
+  {
+   "symbol": "CRK",
+   "sector": null
+  },
+  {
+   "symbol": "CRSR",
+   "sector": null
+  },
+  {
+   "symbol": "CRVL",
+   "sector": null
+  },
+  {
+   "symbol": "CSR",
+   "sector": null
+  },
+  {
+   "symbol": "CSW",
+   "sector": null
+  },
+  {
+   "symbol": "CTKB",
+   "sector": null
+  },
+  {
+   "symbol": "CTS",
+   "sector": null
+  },
+  {
+   "symbol": "CUBI",
+   "sector": null
+  },
+  {
+   "symbol": "CURB",
+   "sector": null
+  },
+  {
+   "symbol": "CVBF",
+   "sector": null
+  },
+  {
+   "symbol": "CVCO",
+   "sector": null
+  },
+  {
+   "symbol": "CVI",
+   "sector": null
+  },
+  {
+   "symbol": "CVSA",
+   "sector": null
+  },
+  {
+   "symbol": "CWEN",
+   "sector": null
+  },
+  {
+   "symbol": "CWEN-A",
+   "sector": null
+  },
+  {
+   "symbol": "CWK",
+   "sector": null
+  },
+  {
+   "symbol": "CWST",
+   "sector": null
+  },
+  {
+   "symbol": "CWT",
+   "sector": null
+  },
+  {
+   "symbol": "CXM",
+   "sector": null
+  },
+  {
+   "symbol": "CXW",
+   "sector": null
+  },
+  {
+   "symbol": "CZR",
+   "sector": null
+  },
+  {
+   "symbol": "DAN",
+   "sector": null
+  },
+  {
+   "symbol": "DAVE",
+   "sector": null
+  },
+  {
+   "symbol": "DBD",
+   "sector": null
+  },
+  {
+   "symbol": "DCH",
+   "sector": null
+  },
+  {
+   "symbol": "DCOM",
+   "sector": null
+  },
+  {
+   "symbol": "DEA",
+   "sector": null
+  },
+  {
+   "symbol": "DEI",
+   "sector": null
+  },
+  {
+   "symbol": "DFH",
+   "sector": null
+  },
+  {
+   "symbol": "DFIN",
+   "sector": null
+  },
+  {
+   "symbol": "DGII",
+   "sector": null
+  },
+  {
+   "symbol": "DIOD",
+   "sector": null
+  },
+  {
+   "symbol": "DLX",
+   "sector": null
+  },
+  {
+   "symbol": "DNOW",
+   "sector": null
+  },
+  {
+   "symbol": "DORM",
+   "sector": null
+  },
+  {
+   "symbol": "DRH",
+   "sector": null
+  },
+  {
+   "symbol": "DV",
+   "sector": null
+  },
+  {
+   "symbol": "DXC",
+   "sector": null
+  },
+  {
+   "symbol": "DXPE",
+   "sector": null
+  },
+  {
+   "symbol": "EAT",
+   "sector": null
+  },
+  {
+   "symbol": "ECG",
+   "sector": null
+  },
+  {
+   "symbol": "ECPG",
+   "sector": null
+  },
+  {
+   "symbol": "EFC",
+   "sector": null
+  },
+  {
+   "symbol": "EFOR",
+   "sector": null
+  },
+  {
+   "symbol": "EGBN",
+   "sector": null
+  },
+  {
+   "symbol": "EIG",
+   "sector": null
+  },
+  {
+   "symbol": "EMBC",
+   "sector": null
+  },
+  {
+   "symbol": "EMN",
+   "sector": null
+  },
+  {
+   "symbol": "ENOV",
+   "sector": null
+  },
+  {
+   "symbol": "ENPH",
+   "sector": null
+  },
+  {
+   "symbol": "ENR",
+   "sector": null
+  },
+  {
+   "symbol": "ENVA",
+   "sector": null
+  },
+  {
+   "symbol": "EPAC",
+   "sector": null
+  },
+  {
+   "symbol": "EPAM",
+   "sector": null
+  },
+  {
+   "symbol": "EPC",
+   "sector": null
+  },
+  {
+   "symbol": "EPRT",
+   "sector": null
+  },
+  {
+   "symbol": "ESE",
+   "sector": null
+  },
+  {
+   "symbol": "ESI",
+   "sector": null
+  },
+  {
+   "symbol": "ETD",
+   "sector": null
+  },
+  {
+   "symbol": "ETSY",
+   "sector": null
+  },
+  {
+   "symbol": "EVTC",
+   "sector": null
+  },
+  {
+   "symbol": "EXTR",
+   "sector": null
+  },
+  {
+   "symbol": "EYE",
+   "sector": null
+  },
+  {
+   "symbol": "EZPW",
+   "sector": null
+  },
+  {
+   "symbol": "FA",
+   "sector": null
+  },
+  {
+   "symbol": "FBK",
+   "sector": null
+  },
+  {
+   "symbol": "FBNC",
+   "sector": null
+  },
+  {
+   "symbol": "FBP",
+   "sector": null
+  },
+  {
+   "symbol": "FBRT",
+   "sector": null
+  },
+  {
+   "symbol": "FCF",
+   "sector": null
+  },
+  {
+   "symbol": "FCPT",
+   "sector": null
+  },
+  {
+   "symbol": "FDP",
+   "sector": null
+  },
+  {
+   "symbol": "FELE",
+   "sector": null
+  },
+  {
+   "symbol": "FFBC",
+   "sector": null
+  },
+  {
+   "symbol": "FG",
+   "sector": null
+  },
+  {
+   "symbol": "FHB",
+   "sector": null
+  },
+  {
+   "symbol": "FIBK",
+   "sector": null
+  },
+  {
+   "symbol": "FIZZ",
+   "sector": null
+  },
+  {
+   "symbol": "FLO",
+   "sector": null
+  },
+  {
+   "symbol": "FMC",
+   "sector": null
+  },
+  {
+   "symbol": "FORM",
+   "sector": null
+  },
+  {
+   "symbol": "FOXF",
+   "sector": null
+  },
+  {
+   "symbol": "FRPT",
+   "sector": null
+  },
+  {
+   "symbol": "FSS",
+   "sector": null
+  },
+  {
+   "symbol": "FTDR",
+   "sector": null
+  },
+  {
+   "symbol": "FTRE",
+   "sector": null
+  },
+  {
+   "symbol": "FUL",
+   "sector": null
+  },
+  {
+   "symbol": "FULT",
+   "sector": null
+  },
+  {
+   "symbol": "FUN",
+   "sector": null
+  },
+  {
+   "symbol": "FWRD",
+   "sector": null
+  },
+  {
+   "symbol": "GBX",
+   "sector": null
+  },
+  {
+   "symbol": "GEO",
+   "sector": null
+  },
+  {
+   "symbol": "GFF",
+   "sector": null
+  },
+  {
+   "symbol": "GIII",
+   "sector": null
+  },
+  {
+   "symbol": "GKOS",
+   "sector": null
+  },
+  {
+   "symbol": "GNL",
+   "sector": null
+  },
+  {
+   "symbol": "GNW",
+   "sector": null
+  },
+  {
+   "symbol": "GO",
+   "sector": null
+  },
+  {
+   "symbol": "GOGO",
+   "sector": null
+  },
+  {
+   "symbol": "GOLF",
+   "sector": null
+  },
+  {
+   "symbol": "GPI",
+   "sector": null
+  },
+  {
+   "symbol": "GRBK",
+   "sector": null
+  },
+  {
+   "symbol": "GSHD",
+   "sector": null
+  },
+  {
+   "symbol": "GTES",
+   "sector": null
+  },
+  {
+   "symbol": "GTM",
+   "sector": null
+  },
+  {
+   "symbol": "GTY",
+   "sector": null
+  },
+  {
+   "symbol": "GVA",
+   "sector": null
+  },
+  {
+   "symbol": "HAFC",
+   "sector": null
+  },
+  {
+   "symbol": "HASI",
+   "sector": null
+  },
+  {
+   "symbol": "HAYW",
+   "sector": null
+  },
+  {
+   "symbol": "HCC",
+   "sector": null
+  },
+  {
+   "symbol": "HCI",
+   "sector": null
+  },
+  {
+   "symbol": "HCSG",
+   "sector": null
+  },
+  {
+   "symbol": "HE",
+   "sector": null
+  },
+  {
+   "symbol": "HFWA",
+   "sector": null
+  },
+  {
+   "symbol": "HIW",
+   "sector": null
+  },
+  {
+   "symbol": "HLIT",
+   "sector": null
+  },
+  {
+   "symbol": "HLX",
+   "sector": null
+  },
+  {
+   "symbol": "HMN",
+   "sector": null
+  },
+  {
+   "symbol": "HNI",
+   "sector": null
+  },
+  {
+   "symbol": "HOPE",
+   "sector": null
+  },
+  {
+   "symbol": "HP",
+   "sector": null
+  },
+  {
+   "symbol": "HRMY",
+   "sector": null
+  },
+  {
+   "symbol": "HSTM",
+   "sector": null
+  },
+  {
+   "symbol": "HTH",
+   "sector": null
+  },
+  {
+   "symbol": "HTLD",
+   "sector": null
+  },
+  {
+   "symbol": "HTO",
+   "sector": null
+  },
+  {
+   "symbol": "HTZ",
+   "sector": null
+  },
+  {
+   "symbol": "HUBG",
+   "sector": null
+  },
+  {
+   "symbol": "HWKN",
+   "sector": null
+  },
+  {
+   "symbol": "HZO",
+   "sector": null
+  },
+  {
+   "symbol": "IART",
+   "sector": null
+  },
+  {
+   "symbol": "IBP",
+   "sector": null
+  },
+  {
+   "symbol": "ICHR",
+   "sector": null
+  },
+  {
+   "symbol": "ICUI",
+   "sector": null
+  },
+  {
+   "symbol": "IIIN",
+   "sector": null
+  },
+  {
+   "symbol": "IIPR",
+   "sector": null
+  },
+  {
+   "symbol": "INDB",
+   "sector": null
+  },
+  {
+   "symbol": "INDV",
+   "sector": null
+  },
+  {
+   "symbol": "INSP",
+   "sector": null
+  },
+  {
+   "symbol": "INSW",
+   "sector": null
+  },
+  {
+   "symbol": "INVA",
+   "sector": null
+  },
+  {
+   "symbol": "INVX",
+   "sector": null
+  },
+  {
+   "symbol": "IOSP",
+   "sector": null
+  },
+  {
+   "symbol": "IPAR",
+   "sector": null
+  },
+  {
+   "symbol": "IRDM",
+   "sector": null
+  },
+  {
+   "symbol": "ITGR",
+   "sector": null
+  },
+  {
+   "symbol": "ITRI",
+   "sector": null
+  },
+  {
+   "symbol": "JBGS",
+   "sector": null
+  },
+  {
+   "symbol": "JBLU",
+   "sector": null
+  },
+  {
+   "symbol": "JBSS",
+   "sector": null
+  },
+  {
+   "symbol": "JBTM",
+   "sector": null
+  },
+  {
+   "symbol": "JJSF",
+   "sector": null
+  },
+  {
+   "symbol": "JOE",
+   "sector": null
+  },
+  {
+   "symbol": "JXN",
+   "sector": null
+  },
+  {
+   "symbol": "KAI",
+   "sector": null
+  },
+  {
+   "symbol": "KALU",
+   "sector": null
+  },
+  {
+   "symbol": "OPLN",
+   "sector": null
+  },
+  {
+   "symbol": "KFY",
+   "sector": null
+  },
+  {
+   "symbol": "KGS",
+   "sector": null
+  },
+  {
+   "symbol": "KLIC",
+   "sector": null
+  },
+  {
+   "symbol": "KMPR",
+   "sector": null
+  },
+  {
+   "symbol": "KMT",
+   "sector": null
+  },
+  {
+   "symbol": "KMX",
+   "sector": null
+  },
+  {
+   "symbol": "KN",
+   "sector": null
+  },
+  {
+   "symbol": "KNTK",
+   "sector": null
+  },
+  {
+   "symbol": "KOP",
+   "sector": null
+  },
+  {
+   "symbol": "KRYS",
+   "sector": null
+  },
+  {
+   "symbol": "KSS",
+   "sector": null
+  },
+  {
+   "symbol": "KTB",
+   "sector": null
+  },
+  {
+   "symbol": "KWR",
+   "sector": null
+  },
+  {
+   "symbol": "LAUR",
+   "sector": null
+  },
+  {
+   "symbol": "LBRT",
+   "sector": null
+  },
+  {
+   "symbol": "LCII",
+   "sector": null
+  },
+  {
+   "symbol": "LEG",
+   "sector": null
+  },
+  {
+   "symbol": "LFST",
+   "sector": null
+  },
+  {
+   "symbol": "LGIH",
+   "sector": null
+  },
+  {
+   "symbol": "LIF",
+   "sector": null
+  },
+  {
+   "symbol": "LGND",
+   "sector": null
+  },
+  {
+   "symbol": "LKFN",
+   "sector": null
+  },
+  {
+   "symbol": "LKQ",
+   "sector": null
+  },
+  {
+   "symbol": "LMAT",
+   "sector": null
+  },
+  {
+   "symbol": "LNC",
+   "sector": null
+  },
+  {
+   "symbol": "LNN",
+   "sector": null
+  },
+  {
+   "symbol": "LPG",
+   "sector": null
+  },
+  {
+   "symbol": "LQDT",
+   "sector": null
+  },
+  {
+   "symbol": "LRN",
+   "sector": null
+  },
+  {
+   "symbol": "LTC",
+   "sector": null
+  },
+  {
+   "symbol": "LTH",
+   "sector": null
+  },
+  {
+   "symbol": "LUMN",
+   "sector": null
+  },
+  {
+   "symbol": "LW",
+   "sector": null
+  },
+  {
+   "symbol": "LXP",
+   "sector": null
+  },
+  {
+   "symbol": "LYFT",
+   "sector": null
+  },
+  {
+   "symbol": "LZ",
+   "sector": null
+  },
+  {
+   "symbol": "LZB",
+   "sector": null
+  },
+  {
+   "symbol": "MAC",
+   "sector": null
+  },
+  {
+   "symbol": "MAN",
+   "sector": null
+  },
+  {
+   "symbol": "MARA",
+   "sector": null
+  },
+  {
+   "symbol": "MATW",
+   "sector": null
+  },
+  {
+   "symbol": "MATX",
+   "sector": null
+  },
+  {
+   "symbol": "MBC",
+   "sector": null
+  },
+  {
+   "symbol": "MBIN",
+   "sector": null
+  },
+  {
+   "symbol": "MC",
+   "sector": null
+  },
+  {
+   "symbol": "MCRI",
+   "sector": null
+  },
+  {
+   "symbol": "MCY",
+   "sector": null
+  },
+  {
+   "symbol": "MD",
+   "sector": null
+  },
+  {
+   "symbol": "MDU",
+   "sector": null
+  },
+  {
+   "symbol": "MGEE",
+   "sector": null
+  },
+  {
+   "symbol": "MGY",
+   "sector": null
+  },
+  {
+   "symbol": "MHK",
+   "sector": null
+  },
+  {
+   "symbol": "MHO",
+   "sector": null
+  },
+  {
+   "symbol": "MIR",
+   "sector": null
+  },
+  {
+   "symbol": "MKTX",
+   "sector": null
+  },
+  {
+   "symbol": "MLKN",
+   "sector": null
+  },
+  {
+   "symbol": "MMI",
+   "sector": null
+  },
+  {
+   "symbol": "MMSI",
+   "sector": null
+  },
+  {
+   "symbol": "MNRO",
+   "sector": null
+  },
+  {
+   "symbol": "MOH",
+   "sector": null
+  },
+  {
+   "symbol": "MPT",
+   "sector": null
+  },
+  {
+   "symbol": "MRCY",
+   "sector": null
+  },
+  {
+   "symbol": "MRP",
+   "sector": null
+  },
+  {
+   "symbol": "MRTN",
+   "sector": null
+  },
+  {
+   "symbol": "MSEX",
+   "sector": null
+  },
+  {
+   "symbol": "MSGS",
+   "sector": null
+  },
+  {
+   "symbol": "MTCH",
+   "sector": null
+  },
+  {
+   "symbol": "MTH",
+   "sector": null
+  },
+  {
+   "symbol": "MTRN",
+   "sector": null
+  },
+  {
+   "symbol": "MTUS",
+   "sector": null
+  },
+  {
+   "symbol": "MTX",
+   "sector": null
+  },
+  {
+   "symbol": "MWA",
+   "sector": null
+  },
+  {
+   "symbol": "MXL",
+   "sector": null
+  },
+  {
+   "symbol": "MYRG",
+   "sector": null
+  },
+  {
+   "symbol": "NABL",
+   "sector": null
+  },
+  {
+   "symbol": "NATL",
+   "sector": null
+  },
+  {
+   "symbol": "NAVI",
+   "sector": null
+  },
+  {
+   "symbol": "NBHC",
+   "sector": null
+  },
+  {
+   "symbol": "NBTB",
+   "sector": null
+  },
+  {
+   "symbol": "NE",
+   "sector": null
+  },
+  {
+   "symbol": "NEO",
+   "sector": null
+  },
+  {
+   "symbol": "NEOG",
+   "sector": null
+  },
+  {
+   "symbol": "NGVT",
+   "sector": null
+  },
+  {
+   "symbol": "NHC",
+   "sector": null
+  },
+  {
+   "symbol": "NHI",
+   "sector": null
+  },
+  {
+   "symbol": "NMIH",
+   "sector": null
+  },
+  {
+   "symbol": "NOG",
+   "sector": null
+  },
+  {
+   "symbol": "NPK",
+   "sector": null
+  },
+  {
+   "symbol": "NPO",
+   "sector": null
+  },
+  {
+   "symbol": "NSIT",
+   "sector": null
+  },
+  {
+   "symbol": "NSP",
+   "sector": null
+  },
+  {
+   "symbol": "NSSC",
+   "sector": null
+  },
+  {
+   "symbol": "NTCT",
+   "sector": null
+  },
+  {
+   "symbol": "NTST",
+   "sector": null
+  },
+  {
+   "symbol": "NWBI",
+   "sector": null
+  },
+  {
+   "symbol": "NWL",
+   "sector": null
+  },
+  {
+   "symbol": "NWN",
+   "sector": null
+  },
+  {
+   "symbol": "NX",
+   "sector": null
+  },
+  {
+   "symbol": "NXRT",
+   "sector": null
+  },
+  {
+   "symbol": "OFG",
+   "sector": null
+  },
+  {
+   "symbol": "OGN",
+   "sector": null
+  },
+  {
+   "symbol": "OI",
+   "sector": null
+  },
+  {
+   "symbol": "OII",
+   "sector": null
+  },
+  {
+   "symbol": "OMCL",
+   "sector": null
+  },
+  {
+   "symbol": "OSIS",
+   "sector": null
+  },
+  {
+   "symbol": "OSW",
+   "sector": null
+  },
+  {
+   "symbol": "OTTR",
+   "sector": null
+  },
+  {
+   "symbol": "OUT",
+   "sector": null
+  },
+  {
+   "symbol": "OXM",
+   "sector": null
+  },
+  {
+   "symbol": "PAHC",
+   "sector": null
+  },
+  {
+   "symbol": "PARR",
+   "sector": null
+  },
+  {
+   "symbol": "PAYC",
+   "sector": null
+  },
+  {
+   "symbol": "PAYO",
+   "sector": null
+  },
+  {
+   "symbol": "PATK",
+   "sector": null
+  },
+  {
+   "symbol": "PBH",
+   "sector": null
+  },
+  {
+   "symbol": "PBI",
+   "sector": null
+  },
+  {
+   "symbol": "PCRX",
+   "sector": null
+  },
+  {
+   "symbol": "PDFS",
+   "sector": null
+  },
+  {
+   "symbol": "PEB",
+   "sector": null
+  },
+  {
+   "symbol": "PECO",
+   "sector": null
+  },
+  {
+   "symbol": "PENG",
+   "sector": null
+  },
+  {
+   "symbol": "PENN",
+   "sector": null
+  },
+  {
+   "symbol": "PFBC",
+   "sector": null
+  },
+  {
+   "symbol": "PFS",
+   "sector": null
+  },
+  {
+   "symbol": "PGNY",
+   "sector": null
+  },
+  {
+   "symbol": "PHIN",
+   "sector": null
+  },
+  {
+   "symbol": "PI",
+   "sector": null
+  },
+  {
+   "symbol": "PIPR",
+   "sector": null
+  },
+  {
+   "symbol": "PJT",
+   "sector": null
+  },
+  {
+   "symbol": "PLAB",
+   "sector": null
+  },
+  {
+   "symbol": "PLMR",
+   "sector": null
+  },
+  {
+   "symbol": "PLUS",
+   "sector": null
+  },
+  {
+   "symbol": "PLXS",
+   "sector": null
+  },
+  {
+   "symbol": "PMT",
+   "sector": null
+  },
+  {
+   "symbol": "POWI",
+   "sector": null
+  },
+  {
+   "symbol": "POWL",
+   "sector": null
+  },
+  {
+   "symbol": "PPLI",
+   "sector": null
+  },
+  {
+   "symbol": "PRAA",
+   "sector": null
+  },
+  {
+   "symbol": "PRDO",
+   "sector": null
+  },
+  {
+   "symbol": "PRG",
+   "sector": null
+  },
+  {
+   "symbol": "PRGO",
+   "sector": null
+  },
+  {
+   "symbol": "PRGS",
+   "sector": null
+  },
+  {
+   "symbol": "PRIM",
+   "sector": null
+  },
+  {
+   "symbol": "PRKS",
+   "sector": null
+  },
+  {
+   "symbol": "PRLB",
+   "sector": null
+  },
+  {
+   "symbol": "PRSU",
+   "sector": null
+  },
+  {
+   "symbol": "PRVA",
+   "sector": null
+  },
+  {
+   "symbol": "PSMT",
+   "sector": null
+  },
+  {
+   "symbol": "PTCT",
+   "sector": null
+  },
+  {
+   "symbol": "PTEN",
+   "sector": null
+  },
+  {
+   "symbol": "PTGX",
+   "sector": null
+  },
+  {
+   "symbol": "PTON",
+   "sector": null
+  },
+  {
+   "symbol": "PZZA",
+   "sector": null
+  },
+  {
+   "symbol": "QDEL",
+   "sector": null
+  },
+  {
+   "symbol": "QNST",
+   "sector": null
+  },
+  {
+   "symbol": "QRVO",
+   "sector": null
+  },
+  {
+   "symbol": "QTWO",
+   "sector": null
+  },
+  {
+   "symbol": "RAMP",
+   "sector": null
+  },
+  {
+   "symbol": "RAL",
+   "sector": null
+  },
+  {
+   "symbol": "RCUS",
+   "sector": null
+  },
+  {
+   "symbol": "RDN",
+   "sector": null
+  },
+  {
+   "symbol": "RDNT",
+   "sector": null
+  },
+  {
+   "symbol": "RELY",
+   "sector": null
+  },
+  {
+   "symbol": "RES",
+   "sector": null
+  },
+  {
+   "symbol": "REYN",
+   "sector": null
+  },
+  {
+   "symbol": "REX",
+   "sector": null
+  },
+  {
+   "symbol": "REZI",
+   "sector": null
+  },
+  {
+   "symbol": "RHI",
+   "sector": null
+  },
+  {
+   "symbol": "RHP",
+   "sector": null
+  },
+  {
+   "symbol": "RITM",
+   "sector": null
+  },
+  {
+   "symbol": "RNG",
+   "sector": null
+  },
+  {
+   "symbol": "RNST",
+   "sector": null
+  },
+  {
+   "symbol": "ROCK",
+   "sector": null
+  },
+  {
+   "symbol": "ROG",
+   "sector": null
+  },
+  {
+   "symbol": "RRR",
+   "sector": null
+  },
+  {
+   "symbol": "RUN",
+   "sector": null
+  },
+  {
+   "symbol": "RUSHA",
+   "sector": null
+  },
+  {
+   "symbol": "RWT",
+   "sector": null
+  },
+  {
+   "symbol": "RXO",
+   "sector": null
+  },
+  {
+   "symbol": "SAFE",
+   "sector": null
+  },
+  {
+   "symbol": "SABR",
+   "sector": null
+  },
+  {
+   "symbol": "SAFT",
+   "sector": null
+  },
+  {
+   "symbol": "SAH",
+   "sector": null
+  },
+  {
+   "symbol": "SANM",
+   "sector": null
+  },
+  {
+   "symbol": "SBCF",
+   "sector": null
+  },
+  {
+   "symbol": "SBH",
+   "sector": null
+  },
+  {
+   "symbol": "SBSI",
+   "sector": null
+  },
+  {
+   "symbol": "SCHL",
+   "sector": null
+  },
+  {
+   "symbol": "SCL",
+   "sector": null
+  },
+  {
+   "symbol": "SCSC",
+   "sector": null
+  },
+  {
+   "symbol": "SDGR",
+   "sector": null
+  },
+  {
+   "symbol": "SEDG",
+   "sector": null
+  },
+  {
+   "symbol": "SEM",
+   "sector": null
+  },
+  {
+   "symbol": "SEZL",
+   "sector": null
+  },
+  {
+   "symbol": "SFBS",
+   "sector": null
+  },
+  {
+   "symbol": "SFNC",
+   "sector": null
+  },
+  {
+   "symbol": "SHAK",
+   "sector": null
+  },
+  {
+   "symbol": "SHEN",
+   "sector": null
+  },
+  {
+   "symbol": "SHO",
+   "sector": null
+  },
+  {
+   "symbol": "SHOO",
+   "sector": null
+  },
+  {
+   "symbol": "SIG",
+   "sector": null
+  },
+  {
+   "symbol": "SKT",
+   "sector": null
+  },
+  {
+   "symbol": "SKY",
+   "sector": null
+  },
+  {
+   "symbol": "SKYW",
+   "sector": null
+  },
+  {
+   "symbol": "SLG",
+   "sector": null
+  },
+  {
+   "symbol": "SLVM",
+   "sector": null
+  },
+  {
+   "symbol": "SM",
+   "sector": null
+  },
+  {
+   "symbol": "SMP",
+   "sector": null
+  },
+  {
+   "symbol": "SMPL",
+   "sector": null
+  },
+  {
+   "symbol": "SMTC",
+   "sector": null
+  },
+  {
+   "symbol": "SNDR",
+   "sector": null
+  },
+  {
+   "symbol": "SNEX",
+   "sector": null
+  },
+  {
+   "symbol": "SONO",
+   "sector": null
+  },
+  {
+   "symbol": "SPHR",
+   "sector": null
+  },
+  {
+   "symbol": "SPNT",
+   "sector": null
+  },
+  {
+   "symbol": "SPSC",
+   "sector": null
+  },
+  {
+   "symbol": "SRPT",
+   "sector": null
+  },
+  {
+   "symbol": "STAA",
+   "sector": null
+  },
+  {
+   "symbol": "STBA",
+   "sector": null
+  },
+  {
+   "symbol": "STC",
+   "sector": null
+  },
+  {
+   "symbol": "STEL",
+   "sector": null
+  },
+  {
+   "symbol": "STEP",
+   "sector": null
+  },
+  {
+   "symbol": "STRA",
+   "sector": null
+  },
+  {
+   "symbol": "SUPN",
+   "sector": null
+  },
+  {
+   "symbol": "SXI",
+   "sector": null
+  },
+  {
+   "symbol": "SXT",
+   "sector": null
+  },
+  {
+   "symbol": "TALO",
+   "sector": null
+  },
+  {
+   "symbol": "TBBK",
+   "sector": null
+  },
+  {
+   "symbol": "TDC",
+   "sector": null
+  },
+  {
+   "symbol": "TDS",
+   "sector": null
+  },
+  {
+   "symbol": "TDW",
+   "sector": null
+  },
+  {
+   "symbol": "TFIN",
+   "sector": null
+  },
+  {
+   "symbol": "TFX",
+   "sector": null
+  },
+  {
+   "symbol": "TGTX",
+   "sector": null
+  },
+  {
+   "symbol": "THRM",
+   "sector": null
+  },
+  {
+   "symbol": "TILE",
+   "sector": null
+  },
+  {
+   "symbol": "TMDX",
+   "sector": null
+  },
+  {
+   "symbol": "TNC",
+   "sector": null
+  },
+  {
+   "symbol": "TNDM",
+   "sector": null
+  },
+  {
+   "symbol": "TR",
+   "sector": null
+  },
+  {
+   "symbol": "TRIP",
+   "sector": null
+  },
+  {
+   "symbol": "TRMK",
+   "sector": null
+  },
+  {
+   "symbol": "TRN",
+   "sector": null
+  },
+  {
+   "symbol": "TRNO",
+   "sector": null
+  },
+  {
+   "symbol": "TRST",
+   "sector": null
+  },
+  {
+   "symbol": "TRUP",
+   "sector": null
+  },
+  {
+   "symbol": "TWO",
+   "sector": null
+  },
+  {
+   "symbol": "UA",
+   "sector": null
+  },
+  {
+   "symbol": "UAA",
+   "sector": null
+  },
+  {
+   "symbol": "UCB",
+   "sector": null
+  },
+  {
+   "symbol": "UCTT",
+   "sector": null
+  },
+  {
+   "symbol": "UE",
+   "sector": null
+  },
+  {
+   "symbol": "UFCS",
+   "sector": null
+  },
+  {
+   "symbol": "UFPT",
+   "sector": null
+  },
+  {
+   "symbol": "UHT",
+   "sector": null
+  },
+  {
+   "symbol": "UNF",
+   "sector": null
+  },
+  {
+   "symbol": "UNFI",
+   "sector": null
+  },
+  {
+   "symbol": "UNIT",
+   "sector": null
+  },
+  {
+   "symbol": "UPBD",
+   "sector": null
+  },
+  {
+   "symbol": "UPWK",
+   "sector": null
+  },
+  {
+   "symbol": "URBN",
+   "sector": null
+  },
+  {
+   "symbol": "USPH",
+   "sector": null
+  },
+  {
+   "symbol": "UTI",
+   "sector": null
+  },
+  {
+   "symbol": "UTL",
+   "sector": null
+  },
+  {
+   "symbol": "UVV",
+   "sector": null
+  },
+  {
+   "symbol": "VAC",
+   "sector": null
+  },
+  {
+   "symbol": "VCEL",
+   "sector": null
+  },
+  {
+   "symbol": "VCTR",
+   "sector": null
+  },
+  {
+   "symbol": "VCYT",
+   "sector": null
+  },
+  {
+   "symbol": "VECO",
+   "sector": null
+  },
+  {
+   "symbol": "VGNT",
+   "sector": null
+  },
+  {
+   "symbol": "VIAV",
+   "sector": null
+  },
+  {
+   "symbol": "VIR",
+   "sector": null
+  },
+  {
+   "symbol": "VIRT",
+   "sector": null
+  },
+  {
+   "symbol": "VITL",
+   "sector": null
+  },
+  {
+   "symbol": "VRRM",
+   "sector": null
+  },
+  {
+   "symbol": "VRTS",
+   "sector": null
+  },
+  {
+   "symbol": "VSAT",
+   "sector": null
+  },
+  {
+   "symbol": "VSEC",
+   "sector": null
+  },
+  {
+   "symbol": "VSH",
+   "sector": null
+  },
+  {
+   "symbol": "VSNT",
+   "sector": null
+  },
+  {
+   "symbol": "VSTS",
+   "sector": null
+  },
+  {
+   "symbol": "VSXY",
+   "sector": null
+  },
+  {
+   "symbol": "VTOL",
+   "sector": null
+  },
+  {
+   "symbol": "VYX",
+   "sector": null
+  },
+  {
+   "symbol": "WABC",
+   "sector": null
+  },
+  {
+   "symbol": "WAFD",
+   "sector": null
+  },
+  {
+   "symbol": "WAY",
+   "sector": null
+  },
+  {
+   "symbol": "WD",
+   "sector": null
+  },
+  {
+   "symbol": "WDFC",
+   "sector": null
+  },
+  {
+   "symbol": "WEN",
+   "sector": null
+  },
+  {
+   "symbol": "WERN",
+   "sector": null
+  },
+  {
+   "symbol": "WGO",
+   "sector": null
+  },
+  {
+   "symbol": "WHD",
+   "sector": null
+  },
+  {
+   "symbol": "WINA",
+   "sector": null
+  },
+  {
+   "symbol": "WKC",
+   "sector": null
+  },
+  {
+   "symbol": "WLY",
+   "sector": null
+  },
+  {
+   "symbol": "WOR",
+   "sector": null
+  },
+  {
+   "symbol": "WRLD",
+   "sector": null
+  },
+  {
+   "symbol": "WS",
+   "sector": null
+  },
+  {
+   "symbol": "WSC",
+   "sector": null
+  },
+  {
+   "symbol": "WSFS",
+   "sector": null
+  },
+  {
+   "symbol": "WSR",
+   "sector": null
+  },
+  {
+   "symbol": "WT",
+   "sector": null
+  },
+  {
+   "symbol": "WU",
+   "sector": null
+  },
+  {
+   "symbol": "WWW",
+   "sector": null
+  },
+  {
+   "symbol": "XHR",
+   "sector": null
+  },
+  {
+   "symbol": "XNCR",
+   "sector": null
+  },
+  {
+   "symbol": "XPEL",
+   "sector": null
+  },
+  {
+   "symbol": "YELP",
+   "sector": null
+  },
+  {
+   "symbol": "YOU",
+   "sector": null
+  },
+  {
+   "symbol": "ZD",
+   "sector": null
+  },
+  {
+   "symbol": "ZWS",
+   "sector": null
+  }
  ]
 }

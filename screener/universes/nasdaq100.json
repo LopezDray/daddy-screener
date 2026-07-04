@@ -1,297 +1,9 @@
 {
  "universe": "nasdaq100",
- "count": 194,
+ "count": 101,
  "symbols": [
   {
-   "symbol": "ALAB",
-   "sector": null
-  },
-  {
-   "symbol": "CRWV",
-   "sector": null
-  },
-  {
-   "symbol": "NBIS",
-   "sector": null
-  },
-  {
-   "symbol": "RKLB",
-   "sector": null
-  },
-  {
-   "symbol": "TER",
-   "sector": null
-  },
-  {
-   "symbol": "LITE",
-   "sector": null
-  },
-  {
-   "symbol": "SNDK",
-   "sector": null
-  },
-  {
-   "symbol": "WMT",
-   "sector": null
-  },
-  {
-   "symbol": "VSNT",
-   "sector": null
-  },
-  {
-   "symbol": "ALNY",
-   "sector": null
-  },
-  {
-   "symbol": "FER",
-   "sector": null
-  },
-  {
-   "symbol": "INSM",
-   "sector": null
-  },
-  {
-   "symbol": "MPWR",
-   "sector": null
-  },
-  {
-   "symbol": "STX",
-   "sector": null
-  },
-  {
-   "symbol": "WDC",
-   "sector": null
-  },
-  {
-   "symbol": "SOLS",
-   "sector": null
-  },
-  {
-   "symbol": "TRI",
-   "sector": null
-  },
-  {
-   "symbol": "ANSS",
-   "sector": null
-  },
-  {
-   "symbol": "SHOP",
-   "sector": null
-  },
-  {
-   "symbol": "PLTR",
-   "sector": null
-  },
-  {
-   "symbol": "MSTR",
-   "sector": null
-  },
-  {
-   "symbol": "AXON",
-   "sector": null
-  },
-  {
-   "symbol": "APP",
-   "sector": null
-  },
-  {
-   "symbol": "SMCI",
-   "sector": null
-  },
-  {
-   "symbol": "ARM",
-   "sector": null
-  },
-  {
-   "symbol": "LIN",
-   "sector": null
-  },
-  {
-   "symbol": "CDW",
-   "sector": null
-  },
-  {
-   "symbol": "CCEP",
-   "sector": null
-  },
-  {
-   "symbol": "DASH",
-   "sector": null
-  },
-  {
-   "symbol": "MDB",
-   "sector": null
-  },
-  {
-   "symbol": "ROP",
-   "sector": null
-  },
-  {
-   "symbol": "SPLK",
-   "sector": null
-  },
-  {
-   "symbol": "TTWO",
-   "sector": null
-  },
-  {
-   "symbol": "TTD",
-   "sector": null
-  },
-  {
-   "symbol": "ON",
-   "sector": null
-  },
-  {
-   "symbol": "GEHC",
-   "sector": null
-  },
-  {
-   "symbol": "CSGP",
-   "sector": null
-  },
-  {
-   "symbol": "RIVN",
-   "sector": null
-  },
-  {
-   "symbol": "NTES",
-   "sector": null
-  },
-  {
-   "symbol": "WBD",
-   "sector": null
-  },
-  {
-   "symbol": "GFS",
-   "sector": null
-  },
-  {
-   "symbol": "BKR",
-   "sector": null
-  },
-  {
-   "symbol": "FANG",
-   "sector": null
-  },
-  {
-   "symbol": "ENPH",
-   "sector": null
-  },
-  {
-   "symbol": "AZN",
-   "sector": null
-  },
-  {
-   "symbol": "CEG",
-   "sector": null
-  },
-  {
-   "symbol": "ODFL",
-   "sector": null
-  },
-  {
-   "symbol": "ABNB",
-   "sector": null
-  },
-  {
-   "symbol": "FTNT",
-   "sector": null
-  },
-  {
-   "symbol": "FOX",
-   "sector": null
-  },
-  {
-   "symbol": "PANW",
-   "sector": null
-  },
-  {
-   "symbol": "LCID",
-   "sector": null
-  },
-  {
-   "symbol": "ZS",
-   "sector": null
-  },
-  {
-   "symbol": "DDOG",
-   "sector": null
-  },
-  {
-   "symbol": "CRWD",
-   "sector": null
-  },
-  {
-   "symbol": "HON",
-   "sector": null
-  },
-  {
-   "symbol": "AEP",
-   "sector": null
-  },
-  {
-   "symbol": "MRVL",
-   "sector": null
-  },
-  {
-   "symbol": "MTCH",
-   "sector": null
-  },
-  {
-   "symbol": "OKTA",
-   "sector": null
-  },
-  {
-   "symbol": "LBTYK",
-   "sector": null
-  },
-  {
-   "symbol": "PTON",
-   "sector": null
-  },
-  {
-   "symbol": "TEAM",
-   "sector": null
-  },
-  {
-   "symbol": "KDP",
-   "sector": null
-  },
-  {
-   "symbol": "PDD",
-   "sector": null
-  },
-  {
-   "symbol": "MRNA",
-   "sector": null
-  },
-  {
-   "symbol": "DOCU",
-   "sector": null
-  },
-  {
-   "symbol": "ZM",
-   "sector": null
-  },
-  {
-   "symbol": "DXCM",
-   "sector": null
-  },
-  {
-   "symbol": "CPRT",
-   "sector": null
-  },
-  {
-   "symbol": "SGEN",
-   "sector": null
-  },
-  {
-   "symbol": "EXC",
-   "sector": null
-  },
-  {
-   "symbol": "FOXA",
+   "symbol": "ADBE",
    "sector": null
   },
   {
@@ -299,215 +11,15 @@
    "sector": null
   },
   {
-   "symbol": "LULU",
+   "symbol": "ABNB",
    "sector": null
   },
   {
-   "symbol": "NTAP",
+   "symbol": "ALNY",
    "sector": null
   },
   {
-   "symbol": "UAL",
-   "sector": null
-  },
-  {
-   "symbol": "VRSN",
-   "sector": null
-  },
-  {
-   "symbol": "WTW",
-   "sector": null
-  },
-  {
-   "symbol": "XEL",
-   "sector": null
-  },
-  {
-   "symbol": "NXPI",
-   "sector": null
-  },
-  {
-   "symbol": "PEP",
-   "sector": null
-  },
-  {
-   "symbol": "ASML",
-   "sector": null
-  },
-  {
-   "symbol": "CDNS",
-   "sector": null
-  },
-  {
-   "symbol": "DISCK",
-   "sector": null
-  },
-  {
-   "symbol": "SNPS",
-   "sector": null
-  },
-  {
-   "symbol": "WDAY",
-   "sector": null
-  },
-  {
-   "symbol": "ALGN",
-   "sector": null
-  },
-  {
-   "symbol": "MELI",
-   "sector": null
-  },
-  {
-   "symbol": "WYNN",
-   "sector": null
-  },
-  {
-   "symbol": "IDXX",
-   "sector": null
-  },
-  {
-   "symbol": "JBHT",
-   "sector": null
-  },
-  {
-   "symbol": "CTAS",
-   "sector": null
-  },
-  {
-   "symbol": "HAS",
-   "sector": null
-  },
-  {
-   "symbol": "HOLX",
-   "sector": null
-  },
-  {
-   "symbol": "KLAC",
-   "sector": null
-  },
-  {
-   "symbol": "SHPG",
-   "sector": null
-  },
-  {
-   "symbol": "MCHP",
-   "sector": null
-  },
-  {
-   "symbol": "XRAY",
-   "sector": null
-  },
-  {
-   "symbol": "LMCK",
-   "sector": null
-  },
-  {
-   "symbol": "BATRA",
-   "sector": null
-  },
-  {
-   "symbol": "BATRK",
-   "sector": null
-  },
-  {
-   "symbol": "CSX",
-   "sector": null
-  },
-  {
-   "symbol": "AVGO",
-   "sector": null
-  },
-  {
-   "symbol": "TCOM",
-   "sector": null
-  },
-  {
-   "symbol": "ENDP",
-   "sector": null
-  },
-  {
-   "symbol": "EXPE",
-   "sector": null
-  },
-  {
-   "symbol": "MXIM",
-   "sector": null
-  },
-  {
-   "symbol": "NCLH",
-   "sector": null
-  },
-  {
-   "symbol": "TMUS",
-   "sector": null
-  },
-  {
-   "symbol": "ULTA",
-   "sector": null
-  },
-  {
-   "symbol": "LILA",
-   "sector": null
-  },
-  {
-   "symbol": "LILAK",
-   "sector": null
-  },
-  {
-   "symbol": "PYPL",
-   "sector": null
-  },
-  {
-   "symbol": "INCY",
-   "sector": null
-  },
-  {
-   "symbol": "SWKS",
-   "sector": null
-  },
-  {
-   "symbol": "SIAL",
-   "sector": null
-  },
-  {
-   "symbol": "JD",
-   "sector": null
-  },
-  {
-   "symbol": "BMRN",
-   "sector": null
-  },
-  {
-   "symbol": "DTV",
-   "sector": null
-  },
-  {
-   "symbol": "CTRX",
-   "sector": null
-  },
-  {
-   "symbol": "KHC",
-   "sector": null
-  },
-  {
-   "symbol": "WBA",
-   "sector": null
-  },
-  {
-   "symbol": "AAL",
-   "sector": null
-  },
-  {
-   "symbol": "EA",
-   "sector": null
-  },
-  {
-   "symbol": "LRCX",
-   "sector": null
-  },
-  {
-   "symbol": "CMCSA",
+   "symbol": "GOOGL",
    "sector": null
   },
   {
@@ -515,55 +27,15 @@
    "sector": null
   },
   {
-   "symbol": "DISH",
+   "symbol": "AMZN",
    "sector": null
   },
   {
-   "symbol": "ILMN",
+   "symbol": "AEP",
    "sector": null
   },
   {
-   "symbol": "TRIP",
-   "sector": null
-  },
-  {
-   "symbol": "TSCO",
-   "sector": null
-  },
-  {
-   "symbol": "MAR",
-   "sector": null
-  },
-  {
-   "symbol": "VIP",
-   "sector": null
-  },
-  {
-   "symbol": "GMCR",
-   "sector": null
-  },
-  {
-   "symbol": "CHTR",
-   "sector": null
-  },
-  {
-   "symbol": "TSLA",
-   "sector": null
-  },
-  {
-   "symbol": "NFLX",
-   "sector": null
-  },
-  {
-   "symbol": "LMCA",
-   "sector": null
-  },
-  {
-   "symbol": "KRFT",
-   "sector": null
-  },
-  {
-   "symbol": "STRZA",
+   "symbol": "AMGN",
    "sector": null
   },
   {
@@ -571,127 +43,31 @@
    "sector": null
   },
   {
-   "symbol": "DISCA",
+   "symbol": "AAPL",
    "sector": null
   },
   {
-   "symbol": "EQIX",
+   "symbol": "AMAT",
    "sector": null
   },
   {
-   "symbol": "LBTYA",
+   "symbol": "APP",
    "sector": null
   },
   {
-   "symbol": "REGN",
+   "symbol": "ARM",
    "sector": null
   },
   {
-   "symbol": "SBAC",
+   "symbol": "ASML",
    "sector": null
   },
   {
-   "symbol": "VRSK",
+   "symbol": "ALAB",
    "sector": null
   },
   {
-   "symbol": "META",
-   "sector": null
-  },
-  {
-   "symbol": "KFT",
-   "sector": null
-  },
-  {
-   "symbol": "VIAB",
-   "sector": null
-  },
-  {
-   "symbol": "TXN",
-   "sector": null
-  },
-  {
-   "symbol": "FOSL",
-   "sector": null
-  },
-  {
-   "symbol": "MNST",
-   "sector": null
-  },
-  {
-   "symbol": "NUAN",
-   "sector": null
-  },
-  {
-   "symbol": "GOLD",
-   "sector": null
-  },
-  {
-   "symbol": "PRGO",
-   "sector": null
-  },
-  {
-   "symbol": "SIRI",
-   "sector": null
-  },
-  {
-   "symbol": "ALXN",
-   "sector": null
-  },
-  {
-   "symbol": "AKAM",
-   "sector": null
-  },
-  {
-   "symbol": "DLTR",
-   "sector": null
-  },
-  {
-   "symbol": "FFIV",
-   "sector": null
-  },
-  {
-   "symbol": "MU",
-   "sector": null
-  },
-  {
-   "symbol": "WFM",
-   "sector": null
-  },
-  {
-   "symbol": "VOD",
-   "sector": null
-  },
-  {
-   "symbol": "MAT",
-   "sector": null
-  },
-  {
-   "symbol": "BMC",
-   "sector": null
-  },
-  {
-   "symbol": "MYL",
-   "sector": null
-  },
-  {
-   "symbol": "QGEN",
-   "sector": null
-  },
-  {
-   "symbol": "VMED",
-   "sector": null
-  },
-  {
-   "symbol": "PCLN",
-   "sector": null
-  },
-  {
-   "symbol": "CERN",
-   "sector": null
-  },
-  {
-   "symbol": "NWSA",
+   "symbol": "ADSK",
    "sector": null
   },
   {
@@ -699,19 +75,211 @@
    "sector": null
   },
   {
-   "symbol": "FSLR",
+   "symbol": "AXON",
    "sector": null
   },
   {
-   "symbol": "LIFE",
+   "symbol": "BKR",
    "sector": null
   },
   {
-   "symbol": "ROST",
+   "symbol": "BKNG",
    "sector": null
   },
   {
-   "symbol": "PPDI",
+   "symbol": "AVGO",
+   "sector": null
+  },
+  {
+   "symbol": "CDNS",
+   "sector": null
+  },
+  {
+   "symbol": "CTAS",
+   "sector": null
+  },
+  {
+   "symbol": "CSCO",
+   "sector": null
+  },
+  {
+   "symbol": "CCEP",
+   "sector": null
+  },
+  {
+   "symbol": "CMCSA",
+   "sector": null
+  },
+  {
+   "symbol": "CEG",
+   "sector": null
+  },
+  {
+   "symbol": "CPRT",
+   "sector": null
+  },
+  {
+   "symbol": "CRWV",
+   "sector": null
+  },
+  {
+   "symbol": "COST",
+   "sector": null
+  },
+  {
+   "symbol": "CRWD",
+   "sector": null
+  },
+  {
+   "symbol": "CSX",
+   "sector": null
+  },
+  {
+   "symbol": "DDOG",
+   "sector": null
+  },
+  {
+   "symbol": "DXCM",
+   "sector": null
+  },
+  {
+   "symbol": "FANG",
+   "sector": null
+  },
+  {
+   "symbol": "DASH",
+   "sector": null
+  },
+  {
+   "symbol": "EA",
+   "sector": null
+  },
+  {
+   "symbol": "EXC",
+   "sector": null
+  },
+  {
+   "symbol": "FAST",
+   "sector": null
+  },
+  {
+   "symbol": "FER",
+   "sector": null
+  },
+  {
+   "symbol": "FTNT",
+   "sector": null
+  },
+  {
+   "symbol": "GEHC",
+   "sector": null
+  },
+  {
+   "symbol": "GILD",
+   "sector": null
+  },
+  {
+   "symbol": "HON",
+   "sector": null
+  },
+  {
+   "symbol": "IDXX",
+   "sector": null
+  },
+  {
+   "symbol": "INTC",
+   "sector": null
+  },
+  {
+   "symbol": "INTU",
+   "sector": null
+  },
+  {
+   "symbol": "ISRG",
+   "sector": null
+  },
+  {
+   "symbol": "KDP",
+   "sector": null
+  },
+  {
+   "symbol": "KLAC",
+   "sector": null
+  },
+  {
+   "symbol": "KHC",
+   "sector": null
+  },
+  {
+   "symbol": "LRCX",
+   "sector": null
+  },
+  {
+   "symbol": "LIN",
+   "sector": null
+  },
+  {
+   "symbol": "LITE",
+   "sector": null
+  },
+  {
+   "symbol": "MAR",
+   "sector": null
+  },
+  {
+   "symbol": "MRVL",
+   "sector": null
+  },
+  {
+   "symbol": "MELI",
+   "sector": null
+  },
+  {
+   "symbol": "META",
+   "sector": null
+  },
+  {
+   "symbol": "MCHP",
+   "sector": null
+  },
+  {
+   "symbol": "MU",
+   "sector": null
+  },
+  {
+   "symbol": "MSFT",
+   "sector": null
+  },
+  {
+   "symbol": "MSTR",
+   "sector": null
+  },
+  {
+   "symbol": "MDLZ",
+   "sector": null
+  },
+  {
+   "symbol": "MPWR",
+   "sector": null
+  },
+  {
+   "symbol": "MNST",
+   "sector": null
+  },
+  {
+   "symbol": "NBIS",
+   "sector": null
+  },
+  {
+   "symbol": "NFLX",
+   "sector": null
+  },
+  {
+   "symbol": "NVDA",
+   "sector": null
+  },
+  {
+   "symbol": "NXPI",
    "sector": null
   },
   {
@@ -719,63 +287,123 @@
    "sector": null
   },
   {
-   "symbol": "URBN",
+   "symbol": "ODFL",
    "sector": null
   },
   {
-   "symbol": "WCRX",
+   "symbol": "PCAR",
    "sector": null
   },
   {
-   "symbol": "FLIR",
+   "symbol": "PLTR",
    "sector": null
   },
   {
-   "symbol": "CA",
+   "symbol": "PANW",
    "sector": null
   },
   {
-   "symbol": "FMCN",
+   "symbol": "PAYX",
    "sector": null
   },
   {
-   "symbol": "HANS",
+   "symbol": "PYPL",
    "sector": null
   },
   {
-   "symbol": "STLD",
+   "symbol": "PDD",
    "sector": null
   },
   {
-   "symbol": "SRCL",
+   "symbol": "PEP",
    "sector": null
   },
   {
-   "symbol": "BIDU",
+   "symbol": "QCOM",
    "sector": null
   },
   {
-   "symbol": "LEAP",
+   "symbol": "REGN",
    "sector": null
   },
   {
-   "symbol": "FWLT",
+   "symbol": "RKLB",
    "sector": null
   },
   {
-   "symbol": "CEPH",
+   "symbol": "ROP",
    "sector": null
   },
   {
-   "symbol": "UAUA",
+   "symbol": "ROST",
    "sector": null
   },
   {
-   "symbol": "RYAAY",
+   "symbol": "SNDK",
    "sector": null
   },
   {
-   "symbol": "LOGI",
+   "symbol": "STX",
+   "sector": null
+  },
+  {
+   "symbol": "SHOP",
+   "sector": null
+  },
+  {
+   "symbol": "SBUX",
+   "sector": null
+  },
+  {
+   "symbol": "SNPS",
+   "sector": null
+  },
+  {
+   "symbol": "TMUS",
+   "sector": null
+  },
+  {
+   "symbol": "TTWO",
+   "sector": null
+  },
+  {
+   "symbol": "TER",
+   "sector": null
+  },
+  {
+   "symbol": "TSLA",
+   "sector": null
+  },
+  {
+   "symbol": "TXN",
+   "sector": null
+  },
+  {
+   "symbol": "TRI",
+   "sector": null
+  },
+  {
+   "symbol": "VRTX",
+   "sector": null
+  },
+  {
+   "symbol": "WMT",
+   "sector": null
+  },
+  {
+   "symbol": "WBD",
+   "sector": null
+  },
+  {
+   "symbol": "WDC",
+   "sector": null
+  },
+  {
+   "symbol": "WDAY",
+   "sector": null
+  },
+  {
+   "symbol": "XEL",
    "sector": null
   }
  ]
