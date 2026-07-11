@@ -38,7 +38,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: result-${{ matrix.universe }}
-          path: docs/${{ matrix.universe }}.json
+          path: |
+            docs/${{ matrix.universe }}.json
+            docs/${{ matrix.universe }}-reversals.json
           retention-days: 2
 
   publish:
@@ -57,6 +59,8 @@ jobs:
           for u in nasdaq100 sp500 sp400 sp600; do
             f="_artifacts/result-$u/$u.json"
             if [ -f "$f" ]; then cp "$f" "docs/$u.json"; fi
+            r="_artifacts/result-$u/$u-reversals.json"
+            if [ -f "$r" ]; then cp "$r" "docs/$u-reversals.json"; fi
           done
           python scripts/build_index.py
       - name: Commit & push
