@@ -19,6 +19,37 @@ from datetime import datetime, timezone
 
 from screener.fetch_yahoo import fetch_daily, resample, MIN_CANDLES
 from screener.scoring import evaluate, INDEX_FOR
+from screener.patterns import detect_reversals
+
+# เรดาร์กลับตัว (W3-11 P3) — จัดกลุ่ม pattern เป็น "ก่อยอด" / "ก่อฐาน"
+REVERSAL_GROUP = {
+    "double_top": "top", "head_shoulders": "top",
+    "double_bottom": "bottom", "inv_head_shoulders": "bottom",
+}
+# เอาเฉพาะ forming + confirmed (D-RR-2) — ตัด failed ทิ้ง
+REVERSAL_STATUS = ("forming", "confirmed")
+
+
+def collect_reversals(symbol, weekly, monthly):
+    """ต่อท้าย scan (0 fetch เพิ่ม): reuse weekly/monthly → คืน list rows กลับตัว
+    ต่อ TF เอา pattern ที่ชัดสุดของแต่ละกลุ่ม (top/bottom) กันซ้ำรก"""
+    rows = []
+    for tf, candles in (("W", weekly), ("M", monthly)):
+        res = detect_reversals(candles, tf)
+        if not res["enough"]:
+            continue
+        for p in res["patterns"]:
+            if p["status"] not in REVERSAL_STATUS:
+                continue
+            grp = REVERSAL_GROUP.get(p["key"])
+            if not grp:
+                continue
+            rows.append({
+                "symbol": symbol, "tf": tf, "key": p["key"], "group": grp,
+                "bias": p["bias"], "status": p["status"],
+                "confidence": p["confidence"], "volConfirmed": p["volConfirmed"],
+            })
+    return rows
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 UNIVERSE_DIR = os.path.join(ROOT, "screener", "universes")
@@ -59,6 +90,7 @@ def scan(universe, limit=None, throttle=0.25):
         print(f"[scan] WARN: no index candles for {universe} (RS จะเป็น null)")
 
     results = []
+    reversals = []
     for i, item in enumerate(symbols):
         symbol = item["symbol"]
         print(f"[scan] {i+1}/{total} {symbol}", end=" ", flush=True)
@@ -72,17 +104,21 @@ def scan(universe, limit=None, throttle=0.25):
             monthly = resample(daily, "1mo")
             row = evaluate(symbol, daily, weekly, monthly, index_weekly,
                            universe, sector=item.get("sector"))
+            rev = collect_reversals(symbol, weekly, monthly)  # 0 fetch เพิ่ม (reuse candles)
+            reversals.extend(rev)
             if row:
                 results.append(row)
-                print(f"→ ✅ {row['grade']} {row['score']} ({row['signal'] or '—'})")
+                print(f"→ ✅ {row['grade']} {row['score']} ({row['signal'] or '—'})"
+                      + (f" · 🔄{len(rev)}" if rev else ""))
             else:
-                print("→ —")
+                print("→ —" + (f" · 🔄{len(rev)}" if rev else ""))
         except Exception as e:  # noqa: BLE001
             print(f"→ ⚠️ {e}")
         time.sleep(throttle)
 
     results.sort(key=lambda r: r["score"], reverse=True)
     write_output(universe, results, total)
+    write_reversals(universe, reversals, total)
     return results
 
 
@@ -102,6 +138,28 @@ def write_output(universe, results, scanned):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, separators=(",", ":"))
     print(f"[scan] wrote {path} — {len(results)} setups (A={grade_a} B={grade_b})")
+
+
+def write_reversals(universe, reversals, scanned):
+    """เขียน docs/<universe>-reversals.json (เรดาร์กลับตัว W3-11 P3)
+    เรียงตามความชัด (confirmed ก่อน forming · confidence สูงก่อน) — frontend ตัด cap/gate เอง"""
+    os.makedirs(DOCS_DIR, exist_ok=True)
+    status_rank = {"confirmed": 0, "forming": 1}
+    reversals.sort(key=lambda r: (status_rank.get(r["status"], 2), -r["confidence"]))
+    tops = sum(1 for r in reversals if r["group"] == "top")
+    bottoms = sum(1 for r in reversals if r["group"] == "bottom")
+    payload = {
+        "schema_version": 1,
+        "universe": universe,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "stats": {"scanned": scanned, "found": len(reversals),
+                  "tops": tops, "bottoms": bottoms},
+        "results": reversals,
+    }
+    path = os.path.join(DOCS_DIR, f"{universe}-reversals.json")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, separators=(",", ":"))
+    print(f"[scan] wrote {path} — {len(reversals)} reversals (top={tops} bottom={bottoms})")
 
 
 def main():
