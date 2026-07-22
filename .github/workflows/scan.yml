@@ -41,6 +41,7 @@ jobs:
           path: |
             docs/${{ matrix.universe }}.json
             docs/${{ matrix.universe }}-reversals.json
+            docs/${{ matrix.universe }}-levels.json
           retention-days: 2
 
   publish:
@@ -61,6 +62,8 @@ jobs:
             if [ -f "$f" ]; then cp "$f" "docs/$u.json"; fi
             r="_artifacts/result-$u/$u-reversals.json"
             if [ -f "$r" ]; then cp "$r" "docs/$u-reversals.json"; fi
+            l="_artifacts/result-$u/$u-levels.json"
+            if [ -f "$l" ]; then cp "$l" "docs/$u-levels.json"; fi
           done
           python scripts/build_index.py
       - name: Commit & push
