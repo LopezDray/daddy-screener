@@ -20,6 +20,8 @@ from datetime import datetime, timezone
 from screener.fetch_yahoo import fetch_daily, resample, MIN_CANDLES
 from screener.scoring import evaluate, INDEX_FOR
 from screener.patterns import detect_reversals
+from screener.stage import analyze_stage, MA_PERIOD
+from screener.levels import build_levels_row
 
 # เรดาร์กลับตัว (W3-11 P3) — จัดกลุ่ม pattern เป็น "ก่อยอด" / "ก่อฐาน"
 REVERSAL_GROUP = {
@@ -91,6 +93,7 @@ def scan(universe, limit=None, throttle=0.25):
 
     results = []
     reversals = []
+    levels = []
     for i, item in enumerate(symbols):
         symbol = item["symbol"]
         print(f"[scan] {i+1}/{total} {symbol}", end=" ", flush=True)
@@ -106,12 +109,24 @@ def scan(universe, limit=None, throttle=0.25):
                            universe, sector=item.get("sector"))
             rev = collect_reversals(symbol, weekly, monthly)  # 0 fetch เพิ่ม (reuse candles)
             reversals.extend(rev)
+            # proximity levels — คำนวณ "ทุกตัว" ไม่ใช่แค่ที่ผ่าน gate breakout (0 fetch เพิ่ม)
+            wa = analyze_stage(weekly, MA_PERIOD["1wk"], "1wk")
+            lv = build_levels_row(
+                symbol, daily, sector=item.get("sector"),
+                w_stage=(wa["stage"] if wa else None),
+                setup=(row["setup"] if row else None),
+                signal=(row["signal"] if row else None),
+                reversal_rows=rev)
+            if lv:
+                levels.append(lv)
             if row:
                 results.append(row)
                 print(f"→ ✅ {row['grade']} {row['score']} ({row['signal'] or '—'})"
-                      + (f" · 🔄{len(rev)}" if rev else ""))
+                      + (f" · 🔄{len(rev)}" if rev else "")
+                      + (f" · 🎯{lv['nearest']['level']}" if lv else ""))
             else:
-                print("→ —" + (f" · 🔄{len(rev)}" if rev else ""))
+                print("→ —" + (f" · 🔄{len(rev)}" if rev else "")
+                      + (f" · 🎯{lv['nearest']['level']}" if lv else ""))
         except Exception as e:  # noqa: BLE001
             print(f"→ ⚠️ {e}")
         time.sleep(throttle)
@@ -119,6 +134,7 @@ def scan(universe, limit=None, throttle=0.25):
     results.sort(key=lambda r: r["score"], reverse=True)
     write_output(universe, results, total)
     write_reversals(universe, reversals, total)
+    write_levels(universe, levels, total)
     return results
 
 
@@ -160,6 +176,29 @@ def write_reversals(universe, reversals, scanned):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, separators=(",", ":"))
     print(f"[scan] wrote {path} — {len(reversals)} reversals (top={tops} bottom={bottoms})")
+
+
+def write_levels(universe, levels, scanned):
+    """เขียน docs/<universe>-levels.json (Proximity Scanner — หุ้นใกล้แนวรับ/ต้าน/AVWAP-5y)
+    เรียงตาม "ชิดแนวที่สุด" (|nearest.dist_pct| น้อยก่อน) — frontend แยกหมวด+gate เอง"""
+    os.makedirs(DOCS_DIR, exist_ok=True)
+    levels.sort(key=lambda r: abs(r["nearest"]["dist_pct"]))
+    n_sup = sum(1 for r in levels if r["nearest"]["level"] in ("s1", "s2"))
+    n_res = sum(1 for r in levels if r["nearest"]["level"] in ("r1", "r2"))
+    n_avwap = sum(1 for r in levels if r["nearest"]["level"] == "avwap5y")
+    payload = {
+        "schema_version": 1,
+        "universe": universe,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "stats": {"scanned": scanned, "found": len(levels),
+                  "near_support": n_sup, "near_resistance": n_res, "near_avwap": n_avwap},
+        "results": levels,
+    }
+    path = os.path.join(DOCS_DIR, f"{universe}-levels.json")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, separators=(",", ":"))
+    print(f"[scan] wrote {path} — {len(levels)} near-level "
+          f"(sup={n_sup} res={n_res} avwap={n_avwap})")
 
 
 def main():
