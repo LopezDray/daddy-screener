@@ -55,6 +55,9 @@ def test_map_symbol():
     check(b.map_symbol("BAZ.R") is None, "right .R → ตัด")
     check(b.map_symbol("BAZ.RT") is None, "right .RT → ตัด")
     check(b.map_symbol("GHI.PRA") is None, "preferred .PRA → ตัด")
+    check(b.map_symbol("BAC.L") is None, "preferred single-letter .L → ตัด (ไม่ใช่ class share)")
+    check(b.map_symbol("GS.D") is None, "preferred single-letter .D → ตัด")
+    check(b.map_symbol("NLY.F") is None, "preferred single-letter .F → ตัด")
     check(b.map_symbol("XYZ.WI") is None, "when-issued .WI → ตัด")
     check(b.map_symbol("TOOLONGSYM") is None, "ยาวเกิน → ตัด")
     check(b.map_symbol("") is None, "ว่าง → None")
@@ -67,6 +70,7 @@ def test_name_filter():
     check(b._keep_by_name("Foo Corp Warrant") is False, "ชื่อ Warrant ตัด")
     check(b._keep_by_name("XYZ 5.5% Notes due 2030") is False, "Notes ตัด")
     check(b._keep_by_name("ABC Preferred Series A") is False, "Preferred ตัด")
+    check(b._keep_by_name("Bank Dep Shares 6.5% Cumulative Redeemable Pfd") is False, "Pfd/Cumulative/% ตัด")
 
 
 def test_parse():

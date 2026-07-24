@@ -40,12 +40,14 @@ _RIGHT = re.compile(r"^R(T)?$")           # .R, .RT
 _UNIT = re.compile(r"^U$")                # .U
 _PREFERRED = re.compile(r"^PR")           # .PRA, .PRB ... (preferred)
 _WHENISSUED = re.compile(r"^WI$")         # .WI
-_CLASS = re.compile(r"^[A-Z]$")           # .A, .B (class share = เก็บ, map → -A/-B)
+# class share สามัญใช้แค่ A/B/C (BRK.B, BF-A, HEI-A ...) · suffix D-Z ตัวเดียว = preferred series
+# (BAC.L, GS.D, NLY.F ...) → ตัด · name filter เป็น backstop กัน preferred series A/B/C หลุด
+_CLASS = re.compile(r"^[ABC]$")
 
-# ชื่อหลักทรัพย์ที่ = ไม่ใช่หุ้นสามัญ (กันเคสที่ suffix ไม่ชัด)
+# ชื่อหลักทรัพย์ที่ = ไม่ใช่หุ้นสามัญ (กันเคสที่ suffix ไม่ชัด — โดยเฉพาะ preferred series A/B/C)
 _NAME_JUNK = re.compile(
-    r"\b(warrant|right|unit|preferred|depositary|debenture|note|"
-    r"when[-\s]?issued|contingent value)",
+    r"\b(warrant|right|unit|preferred|pfd|depositary|debenture|note|"
+    r"cumulative|redeemable|when[-\s]?issued|contingent value)|%",
     re.I,
 )
 _NAME_ADR = re.compile(r"\b(ADR|American Depositary|ADS)\b", re.I)
