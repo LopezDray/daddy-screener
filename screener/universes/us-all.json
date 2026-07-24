@@ -1,6 +1,6 @@
 {
  "universe": "us-all",
- "count": 5594,
+ "count": 5559,
  "symbols": [
   {
    "symbol": "A",
@@ -632,10 +632,6 @@
   },
   {
    "symbol": "AHG",
-   "sector": null
-  },
-  {
-   "symbol": "AHL-D",
    "sector": null
   },
   {
@@ -2199,10 +2195,6 @@
    "sector": null
   },
   {
-   "symbol": "BAC-L",
-   "sector": null
-  },
-  {
    "symbol": "BACC",
    "sector": null
   },
@@ -3048,10 +3040,6 @@
   },
   {
    "symbol": "BNRG",
-   "sector": null
-  },
-  {
-   "symbol": "BNS",
    "sector": null
   },
   {
@@ -5607,18 +5595,6 @@
    "sector": null
   },
   {
-   "symbol": "DBRG-H",
-   "sector": null
-  },
-  {
-   "symbol": "DBRG-I",
-   "sector": null
-  },
-  {
-   "symbol": "DBRG-J",
-   "sector": null
-  },
-  {
    "symbol": "DBVT",
    "sector": null
   },
@@ -6295,10 +6271,6 @@
    "sector": null
   },
   {
-   "symbol": "EAI",
-   "sector": null
-  },
-  {
    "symbol": "EARN",
    "sector": null
   },
@@ -6579,10 +6551,6 @@
    "sector": null
   },
   {
-   "symbol": "ELC",
-   "sector": null
-  },
-  {
    "symbol": "ELDN",
    "sector": null
   },
@@ -6711,10 +6679,6 @@
    "sector": null
   },
   {
-   "symbol": "EMP",
-   "sector": null
-  },
-  {
    "symbol": "EMPD",
    "sector": null
   },
@@ -6743,19 +6707,11 @@
    "sector": null
   },
   {
-   "symbol": "ENJ",
-   "sector": null
-  },
-  {
    "symbol": "ENLT",
    "sector": null
   },
   {
    "symbol": "ENLV",
-   "sector": null
-  },
-  {
-   "symbol": "ENO",
    "sector": null
   },
   {
@@ -6864,10 +6820,6 @@
   },
   {
    "symbol": "EPR",
-   "sector": null
-  },
-  {
-   "symbol": "EPR-E",
    "sector": null
   },
   {
@@ -8239,10 +8191,6 @@
    "sector": null
   },
   {
-   "symbol": "GAB-H",
-   "sector": null
-  },
-  {
    "symbol": "GABC",
    "sector": null
   },
@@ -8511,10 +8459,6 @@
    "sector": null
   },
   {
-   "symbol": "GGN-B",
-   "sector": null
-  },
-  {
    "symbol": "GGR",
    "sector": null
   },
@@ -8600,10 +8544,6 @@
   },
   {
    "symbol": "GIX",
-   "sector": null
-  },
-  {
-   "symbol": "GJH",
    "sector": null
   },
   {
@@ -9020,10 +8960,6 @@
   },
   {
    "symbol": "GS",
-   "sector": null
-  },
-  {
-   "symbol": "GS-D",
    "sector": null
   },
   {
@@ -9632,10 +9568,6 @@
   },
   {
    "symbol": "HPE",
-   "sector": null
-  },
-  {
-   "symbol": "HPF",
    "sector": null
   },
   {
@@ -10831,10 +10763,6 @@
    "sector": null
   },
   {
-   "symbol": "JBK",
-   "sector": null
-  },
-  {
    "symbol": "JBL",
    "sector": null
   },
@@ -11491,10 +11419,6 @@
    "sector": null
   },
   {
-   "symbol": "KTN",
-   "sector": null
-  },
-  {
    "symbol": "KTOS",
    "sector": null
   },
@@ -11904,10 +11828,6 @@
   },
   {
    "symbol": "LILAK",
-   "sector": null
-  },
-  {
-   "symbol": "LILAP",
    "sector": null
   },
   {
@@ -12951,10 +12871,6 @@
    "sector": null
   },
   {
-   "symbol": "MKC-V",
-   "sector": null
-  },
-  {
    "symbol": "MKDW",
    "sector": null
   },
@@ -13316,14 +13232,6 @@
   },
   {
    "symbol": "MS",
-   "sector": null
-  },
-  {
-   "symbol": "MS-A",
-   "sector": null
-  },
-  {
-   "symbol": "MS-F",
    "sector": null
   },
   {
@@ -14112,10 +14020,6 @@
   },
   {
    "symbol": "NLY",
-   "sector": null
-  },
-  {
-   "symbol": "NLY-F",
    "sector": null
   },
   {
@@ -17827,18 +17731,6 @@
    "sector": null
   },
   {
-   "symbol": "SCE-L",
-   "sector": null
-  },
-  {
-   "symbol": "SCE-M",
-   "sector": null
-  },
-  {
-   "symbol": "SCE-N",
-   "sector": null
-  },
-  {
    "symbol": "SCHL",
    "sector": null
   },
@@ -20119,34 +20011,6 @@
    "sector": null
   },
   {
-   "symbol": "TRTN-A",
-   "sector": null
-  },
-  {
-   "symbol": "TRTN-B",
-   "sector": null
-  },
-  {
-   "symbol": "TRTN-C",
-   "sector": null
-  },
-  {
-   "symbol": "TRTN-D",
-   "sector": null
-  },
-  {
-   "symbol": "TRTN-E",
-   "sector": null
-  },
-  {
-   "symbol": "TRTN-F",
-   "sector": null
-  },
-  {
-   "symbol": "TRTN-G",
-   "sector": null
-  },
-  {
    "symbol": "TRTX",
    "sector": null
   },
@@ -21100,10 +20964,6 @@
   },
   {
    "symbol": "VNO",
-   "sector": null
-  },
-  {
-   "symbol": "VNO-L",
    "sector": null
   },
   {
