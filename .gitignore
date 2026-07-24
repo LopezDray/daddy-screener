@@ -3,3 +3,4 @@ __pycache__/
 .venv/
 .DS_Store
 _artifacts/
+docs/us-all-shard*.json   # shard bundle = artifact ชั่วคราว (policy: ไม่ commit candle-derived per-shard)
