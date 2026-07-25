@@ -59,6 +59,10 @@
    "sector": null
   },
   {
+   "symbol": "ALSN",
+   "sector": null
+  },
+  {
    "symbol": "ALV",
    "sector": null
   },
@@ -191,10 +195,6 @@
    "sector": null
   },
   {
-   "symbol": "BLD",
-   "sector": null
-  },
-  {
    "symbol": "BMRN",
    "sector": null
   },
@@ -212,6 +212,10 @@
   },
   {
    "symbol": "BSY",
+   "sector": null
+  },
+  {
+   "symbol": "BTSG",
    "sector": null
   },
   {
@@ -647,14 +651,6 @@
    "sector": null
   },
   {
-   "symbol": "GT",
-   "sector": null
-  },
-  {
-   "symbol": "GTLS",
-   "sector": null
-  },
-  {
    "symbol": "GWRE",
    "sector": null
   },
@@ -735,6 +731,10 @@
    "sector": null
   },
   {
+   "symbol": "IESC",
+   "sector": null
+  },
+  {
    "symbol": "ILMN",
    "sector": null
   },
@@ -760,10 +760,6 @@
   },
   {
    "symbol": "JEF",
-   "sector": null
-  },
-  {
-   "symbol": "JHG",
    "sector": null
   },
   {
@@ -804,6 +800,10 @@
   },
   {
    "symbol": "KRG",
+   "sector": null
+  },
+  {
+   "symbol": "KRYS",
    "sector": null
   },
   {
@@ -891,6 +891,10 @@
    "sector": null
   },
   {
+   "symbol": "MOH",
+   "sector": null
+  },
+  {
    "symbol": "MORN",
    "sector": null
   },
@@ -968,10 +972,6 @@
   },
   {
    "symbol": "NOVT",
-   "sector": null
-  },
-  {
-   "symbol": "NSA",
    "sector": null
   },
   {
@@ -1395,15 +1395,15 @@
    "sector": null
   },
   {
-   "symbol": "TMHC",
-   "sector": null
-  },
-  {
    "symbol": "TNL",
    "sector": null
   },
   {
    "symbol": "TOL",
+   "sector": null
+  },
+  {
+   "symbol": "TOST",
    "sector": null
   },
   {

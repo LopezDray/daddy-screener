@@ -19,6 +19,8 @@ jobs:
           python-version: '3.12'
       - name: Refresh S&P500 + Russell2000 lists
         run: python scripts/update_universes.py
+      - name: Build us-all universe (ทั้งตลาด US จาก NASDAQ Trader dir)
+        run: python scripts/build_us_all.py
       - name: Commit & push
         run: |
           git config user.name  "daddy-screener-bot"

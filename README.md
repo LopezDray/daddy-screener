@@ -1,6 +1,7 @@
 # daddy-screener
 
-Compute node ของ **daddyinvestor.net** — สแกนหุ้น 4 universe (NASDAQ100 + S&P 500/400/600)
+Compute node ของ **daddyinvestor.net** — สแกนหุ้น 4 index universe (NASDAQ100 + S&P 500/400/600)
+**+ `us-all` = ทั้งตลาด US ~6-7k ตัว** (shard 8 job แยก IP · จาก NASDAQ Trader symbol dir)
 หา setup **"Breakout เพื่อถือ + ออมยาว (DCA)"** โดยผสม Stan Weinstein Stage Analysis กับ Volume Profile
 
 รันบน **GitHub Actions ของ public repo** → ฟรีไม่จำกัดนาที · ดึงราคาจาก Yahoo Finance (ฟรี ไม่ใช้ key)
@@ -82,6 +83,7 @@ cat docs/nasdaq100.json
 
 ## ⚠️ ข้อควรระวัง
 
-- **Survivorship bias** — universe = สมาชิกดัชนี *ปัจจุบัน* ใช้คัดหุ้นวันนี้ได้ **ห้ามเอาไป backtest ย้อนหลัง**
-- **Yahoo rate-limit** — มี retry+host fallback+throttle · ถ้าโดนเหมาแบน IP GitHub บางวัน → ใช้ JSON เดิม (ไม่พัง)
-- **Russell2000** — microcap สภาพคล่องต่ำ/data มีรู → gate สภาพคล่องกรองออกเยอะ (คาดเหลือหลักสิบ = ปกติ)
+- **Survivorship bias** — universe = สมาชิกดัชนี/รายชื่อจดทะเบียน *ปัจจุบัน* (รวม `us-all` = NASDAQ Trader dir วันนี้) ใช้คัดหุ้นวันนี้ได้ **ห้ามเอาไป backtest ย้อนหลัง** (หุ้น delisted หายจากลิสต์รายเดือน · output ไม่ใช่ backtest-grade)
+- **Yahoo rate-limit** — มี retry+host fallback+throttle+jitter+Retry-After+adaptive congestion · `us-all` shard 8 job = แยก IP ~850 ตัว/IP (เท่าระดับ sp600) · ถ้าโดนเหมาแบน IP GitHub บางวัน → ใช้ JSON เดิม (ไม่พัง) · **shard ขาดตัวเดียว = merge_shards skip ทั้งชุด** (กันข้อมูลตลาดครึ่งใบ)
+- **Russell2000/microcap** — สภาพคล่องต่ำ/data มีรู → `us-all` มี floor `dv20≥$1M`,`close≥$1` ใน table + gate สภาพคล่องกรอง breakout ออกเยอะ (คาดเหลือหลักสิบ = ปกติ)
+- **us-all-table.json = master quant table** (compact array-of-arrays, ~5.5k แถว) — ทุกตัวที่ candle พอ ไม่ใช่แค่ผ่าน gate breakout · frontend sort/filter chips เอง

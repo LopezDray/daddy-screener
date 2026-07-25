@@ -24,7 +24,8 @@ VOL_CONFIRM = 1.5             # B3: vol สัปดาห์ล่าสุด 
 GRADE_A = 80
 GRADE_B = 65
 
-INDEX_FOR = {"nasdaq100": "QQQ", "sp500": "SPY", "sp400": "IJH", "sp600": "IJR"}
+INDEX_FOR = {"nasdaq100": "QQQ", "sp500": "SPY", "sp400": "IJH", "sp600": "IJR",
+             "us-all": "SPY"}   # ทั้งตลาด → เทียบ SPY (มาตรฐานตลาด · VTI ต่างกันไม่มีนัยใน 12wk)
 
 
 def evaluate(symbol, daily, weekly, monthly, index_weekly, universe, sector=None):
