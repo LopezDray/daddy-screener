@@ -66,6 +66,25 @@ def test_row_carries_real_count():
     check(row is not None and row[-1] == "4u", "build_table_row คาย ew='4u' ในคอลัมน์สุดท้าย")
 
 
+def test_complete_five_waves_stays_silent():
+    """🔴 regression QCRH (08-01): หุ้นที่ **นับครบ 5 คลื่นแล้ว** ต้องไม่ติดป้ายในตาราง
+
+    เดิมป้ายบอก "ถึงคลื่น 4" ขณะที่แผง Elliott ของหุ้นเดียวกันบอก "นับครบ 5 คลื่น"
+    เพราะ engine ฝั่ง scan ไม่รู้จัก impulse ครบ 5 เลย → ต้องกันที่ระดับแถวด้วย
+    ไม่ใช่แค่ระดับ engine (ค่านี้คือสิ่งที่ frontend อ่านจริง)
+    """
+    print("\nนับครบ 5 คลื่นแล้วต้องเงียบ (regression QCRH):")
+    seq = ew._bull_12345()
+    daily = [{**c, "time": _day(i), "volume": 2_000_000} for i, c in enumerate(seq)]
+    st = ew.detect_state(daily, "1d")
+    check(st is not None and st["state"] == "complete",
+          f"engine อ่านซีรีส์นี้เป็น complete (ได้ {st and st['state']!r})")
+    check(ew.wave_code(daily, "1d") is None, "wave_code เงียบ (None)")
+    row = rs.build_table_row("DONE5", daily, rs.resample(daily, "1wk"),
+                             rs.resample(daily, "1mo"), None, None, None, [])
+    check(row is not None and row[-1] is None, "แถว table คาย ew=None ไม่ใช่ '4u'")
+
+
 def test_bad_input_never_kills_row():
     """หุ้นตัวเดียวคำนวณคลื่นพัง ห้ามล้มทั้งแถว (คอลัมน์อื่นยังมีค่า)"""
     print("\nกันพังทั้งแถว:")
@@ -95,6 +114,7 @@ if __name__ == "__main__":
     test_engine_self_test()
     test_table_contract()
     test_row_carries_real_count()
+    test_complete_five_waves_stays_silent()
     test_bad_input_never_kills_row()
     print("\n" + ("ALL PASS ✅" if not _fails else f"FAIL ❌ ({len(_fails)}): " + " · ".join(_fails)))
     sys.exit(1 if _fails else 0)

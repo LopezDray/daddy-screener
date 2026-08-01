@@ -1,0 +1,58 @@
+name: tests
+
+# CI job แรกของ repo นี้ (ก่อนหน้านี้มีแต่ scan.yml/update-universes.yml — เทสไม่เคยถูกรันเลย)
+# บทเรียนที่ทำให้ต้องมี: บั๊ก QCRH 08-01 — ป้าย 🌊 บอก "ถึงคลื่น 4" ขณะที่แผง Elliott
+#   ของหุ้นเดียวกันบอก "นับครบ 5 คลื่น" · เทสที่มีตอนนั้นผ่านหมดเพราะไม่มีอะไรเทียบ
+#   "คำตอบสุดท้าย" ระหว่าง engine สองฝั่ง
+#
+# $0: public repo = Actions ฟรี · ไม่แตะ network ภายนอกเลย (Yahoo/FMP/Supabase 0 call)
+#     ยกเว้น clone DaddyInvestor (public) เพื่อเอา chart-elliott.js ตัวจริงมาเทียบ
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: python unit + cross-engine parity
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # parity ต้องรัน chart-elliott.js ของจริง (มี module.exports · ไม่มี window dep)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # ⚠️ clone main เสมอ (ไม่ pin sha) — จงใจ: ต้องการให้ CI **แตกทันที** ถ้าฝั่งแอป
+      #    แก้เครื่องยนต์แล้ว screener ยังไม่ตาม (drift จับได้ทั้งสองทิศ)
+      - name: ดึง chart-elliott.js ตัวจริงจาก DaddyInvestor
+        run: git clone --depth 1 https://github.com/LopezDray/DaddyInvestor _daddyinvestor
+
+      - name: Elliott engine self-test
+        run: python -m screener.elliott --self-test
+
+      - name: 🔴 cross-engine parity (Python ↔ chart-elliott.js)
+        env:
+          DADDY_APP_DIR: ${{ github.workspace }}/_daddyinvestor
+        run: python tests/test_parity_vs_chart.py
+
+      - name: เทสที่เหลือทั้งหมดใน tests/
+        run: |
+          fail=0
+          for t in tests/test_*.py; do
+            [ "$t" = "tests/test_parity_vs_chart.py" ] && continue
+            echo "── $t"
+            python "$t" || fail=1
+          done
+          exit $fail
+
+      - name: py_compile ทุกไฟล์ (กัน syntax error หลุดขึ้น main)
+        run: python -m compileall -q screener run_scan.py scripts tests
