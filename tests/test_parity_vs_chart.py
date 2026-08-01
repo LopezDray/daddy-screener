@@ -21,11 +21,19 @@ tests/test_parity_vs_chart.py — 🔴 gate สำคัญที่สุดข
 2. synthetic จาก screener.elliott ที่จงใจครอบทุกสถานะ: forming · early · complete ·
    complete+partial ใหม่กว่า · invalid · ไม่มีโครงสร้าง (ทั้งขาขึ้นและขาลง)
 
+engine ที่เอามาเทียบ (เรียงตามลำดับ)
+-----------------------------------
+1. `$DADDY_APP_DIR/chart-elliott.js` — **ตัวจริง** ถ้ามี repo DaddyInvestor อยู่ใกล้ๆ
+   (ใช้ตอน dev และตอน CI ฝั่งแอปรันเทสนี้ข้าม repo)
+2. `tests/vendor/chart-elliott.js` — สำเนาที่ commit ไว้ (DaddyInvestor เป็น private repo
+   → CI ของ daddy-screener clone ไม่ได้) · ดู tests/vendor/README.md ว่าจับ drift ยังไง
+
 รัน:  python tests/test_parity_vs_chart.py          # $0 ไม่แตะ network
-ต้องมี: node ใน PATH + repo DaddyInvestor (ชี้ผ่าน env DADDY_APP_DIR)
-⚠️ หาไม่เจอ = **fail** ไม่ใช่ skip — เทสที่ skip เงียบคือเกราะที่ไม่ได้เสียบปลั๊ก
+ต้องมี: node ใน PATH
+⚠️ หา engine ไม่เจอ = **fail** ไม่ใช่ skip — เทสที่ skip เงียบคือเกราะที่ไม่ได้เสียบปลั๊ก
 """
 
+import hashlib
 import json
 import os
 import shutil
@@ -40,13 +48,12 @@ from screener import elliott as ew                       # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DUMPER = os.path.join(HERE, "parity_dump.mjs")
+VENDOR = os.path.join(HERE, "vendor", "chart-elliott.js")
 
-# ที่ที่อาจเจอ repo DaddyInvestor — env มาก่อนเสมอ
+# ที่ที่อาจเจอ repo DaddyInvestor ตัวจริง — env มาก่อนเสมอ · ไม่เจอ → ตกไปใช้สำเนา
 APP_DIR_CANDIDATES = [
     os.environ.get("DADDY_APP_DIR"),
-    os.path.join(os.path.dirname(ROOT), "DaddyInvestor"),
-    "/home/user/DaddyInvestor",
-    os.path.join(ROOT, "_daddyinvestor"),
+    os.path.join(os.path.dirname(ROOT), "DaddyInvestor"),   # เรโปวางข้างกัน
 ]
 
 _fails = []
@@ -63,13 +70,38 @@ def die(msg):
     sys.exit(1)
 
 
-def find_app_dir():
+def sha256_of(path):
+    with open(path, "rb") as f:
+        return hashlib.sha256(f.read()).hexdigest()
+
+
+def resolve_engine():
+    """คืน (path ของ engine, live?) — ตัวจริงมาก่อน ไม่มีค่อยใช้สำเนา"""
     for d in APP_DIR_CANDIDATES:
         if d and os.path.isfile(os.path.join(d, "chart-elliott.js")):
-            return d
-    die("หา chart-elliott.js ไม่เจอ — ตั้ง env DADDY_APP_DIR ให้ชี้ไปที่ repo DaddyInvestor\n"
-        "   (CI: git clone --depth 1 https://github.com/LopezDray/DaddyInvestor)\n"
-        "   ที่ลองแล้ว: " + " · ".join(str(d) for d in APP_DIR_CANDIDATES if d))
+            return os.path.join(d, "chart-elliott.js"), True
+    if os.path.isfile(VENDOR):
+        return VENDOR, False
+    die("หา chart-elliott.js ไม่เจอทั้งตัวจริงและสำเนา\n"
+        "   - ตัวจริง: ตั้ง env DADDY_APP_DIR ให้ชี้ไปที่ repo DaddyInvestor\n"
+        f"   - สำเนา: {VENDOR} (ดู tests/vendor/README.md)")
+
+
+def check_vendor_integrity(engine, live):
+    """สำเนาต้องไม่ถูกแก้มือ · ถ้ามีตัวจริงอยู่ด้วยให้บอกว่าสำเนาตรงกันไหม"""
+    rec_path = VENDOR + ".sha256"
+    if not os.path.isfile(VENDOR) or not os.path.isfile(rec_path):
+        return
+    recorded = open(rec_path, encoding="utf-8").read().strip()
+    actual = sha256_of(VENDOR)
+    check(actual == recorded,
+          "สำเนา tests/vendor/chart-elliott.js ตรงกับ sha256 ที่บันทึกไว้ (ไม่ถูกแก้มือ)")
+    if live:
+        same = sha256_of(engine) == recorded
+        # ไม่ fail — สำเนาเก่าได้โดยไม่อันตราย (ดู tests/vendor/README.md) แต่ต้องรู้ตัว
+        print("  ℹ️  สำเนา vs ตัวจริง: " + ("ตรงกัน" if same else
+              "⚠️ ต่างกัน — สำเนาเก่าแล้ว (เทสรอบนี้ใช้ตัวจริง ผลจึงเชื่อได้) "
+              "ถ้าเขียวควรอัปเดตสำเนาตาม tests/vendor/README.md"))
 
 
 def bars_of(candles):
@@ -110,8 +142,9 @@ def synthetic_cases():
     return out
 
 
-def real_cases(app_dir):
-    path = os.path.join(app_dir, "tests", "fixtures", "elliott_cases.json")
+def real_cases():
+    """candle หุ้นจริงจาก fixture ที่ commit ไว้ในเรโปนี้ (คัดลอกมาจาก DaddyInvestor)"""
+    path = os.path.join(HERE, "fixtures", "elliott_cases.json")
     if not os.path.isfile(path):
         die("หา fixture หุ้นจริงไม่เจอ: " + path)
     fx = json.load(open(path, encoding="utf-8"))
@@ -121,13 +154,14 @@ def real_cases(app_dir):
 
 def main():
     if not shutil.which("node"):
-        die("ไม่มี node ใน PATH — parity test ต้องรัน chart-elliott.js ของจริง")
-    app_dir = find_app_dir()
-    engine = os.path.join(app_dir, "chart-elliott.js")
-    print(f"engine ฝั่งแอป: {engine}")
+        die("ไม่มี node ใน PATH — parity test ต้องรัน chart-elliott.js จริงๆ")
+    engine, live = resolve_engine()
+    print(f"engine ฝั่งแอป: {engine}  [{'ตัวจริง' if live else 'สำเนาใน repo'}]")
+    check_vendor_integrity(engine, live)
 
-    cases = real_cases(app_dir) + synthetic_cases()
-    print(f"เคสทั้งหมด: {len(cases)} (หุ้นจริง 8 · synthetic {len(cases) - 8})\n")
+    real = real_cases()
+    cases = real + synthetic_cases()
+    print(f"เคสทั้งหมด: {len(cases)} (หุ้นจริง {len(real)} · synthetic {len(cases) - len(real)})\n")
 
     with tempfile.TemporaryDirectory() as td:
         cases_path = os.path.join(td, "cases.json")
