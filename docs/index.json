@@ -1,40 +1,40 @@
 {
- "generated_at": "2026-07-31T23:15:23.136035+00:00",
+ "generated_at": "2026-08-01T13:59:00.775794+00:00",
  "universes": {
   "nasdaq100": {
-   "updated": "2026-07-31T23:08:35.430494+00:00",
+   "updated": "2026-08-01T13:52:06.111511+00:00",
    "scanned": 101,
    "grade_a": 9,
    "grade_b": 23,
    "near_levels": 101
   },
   "sp500": {
-   "updated": "2026-07-31T23:11:47.892372+00:00",
+   "updated": "2026-08-01T13:54:40.230465+00:00",
    "scanned": 503,
    "grade_a": 43,
    "grade_b": 117,
    "near_levels": 500
   },
   "sp400": {
-   "updated": "2026-07-31T23:11:15.707210+00:00",
+   "updated": "2026-08-01T13:54:26.624029+00:00",
    "scanned": 400,
    "grade_a": 38,
    "grade_b": 81,
-   "near_levels": 396
+   "near_levels": 397
   },
   "sp600": {
-   "updated": "2026-07-31T23:13:00.591001+00:00",
+   "updated": "2026-08-01T13:55:30.460583+00:00",
    "scanned": 601,
    "grade_a": 61,
-   "grade_b": 147,
+   "grade_b": 145,
    "near_levels": 590
   },
   "us-all": {
-   "updated": "2026-07-31T23:15:22.895308+00:00",
-   "scanned": 5559,
+   "updated": "2026-08-01T13:59:00.589640+00:00",
+   "scanned": 5562,
    "grade_a": 213,
-   "grade_b": 550,
-   "near_levels": 5113
+   "grade_b": 551,
+   "near_levels": 5124
   }
  }
 }
