@@ -239,10 +239,6 @@
    "sector": null
   },
   {
-   "symbol": "AVNS",
-   "sector": null
-  },
-  {
    "symbol": "AWI",
    "sector": null
   },
@@ -352,10 +348,6 @@
   },
   {
    "symbol": "BRC",
-   "sector": null
-  },
-  {
-   "symbol": "BTSG",
    "sector": null
   },
   {
@@ -516,10 +508,6 @@
   },
   {
    "symbol": "CPK",
-   "sector": null
-  },
-  {
-   "symbol": "CPRX",
    "sector": null
   },
   {
@@ -1155,10 +1143,6 @@
    "sector": null
   },
   {
-   "symbol": "OPLN",
-   "sector": null
-  },
-  {
    "symbol": "KFY",
    "sector": null
   },
@@ -1195,7 +1179,7 @@
    "sector": null
   },
   {
-   "symbol": "KRYS",
+   "symbol": "KRMN",
    "sector": null
   },
   {
@@ -1411,10 +1395,6 @@
    "sector": null
   },
   {
-   "symbol": "MOH",
-   "sector": null
-  },
-  {
    "symbol": "MPT",
    "sector": null
   },
@@ -1592,6 +1572,10 @@
   },
   {
    "symbol": "OMCL",
+   "sector": null
+  },
+  {
+   "symbol": "OPLN",
    "sector": null
   },
   {
@@ -1863,6 +1847,10 @@
    "sector": null
   },
   {
+   "symbol": "ROAD",
+   "sector": null
+  },
+  {
    "symbol": "ROCK",
    "sector": null
   },
@@ -1936,6 +1924,10 @@
   },
   {
    "symbol": "SEDG",
+   "sector": null
+  },
+  {
+   "symbol": "SEI",
    "sector": null
   },
   {
@@ -2115,6 +2107,10 @@
    "sector": null
   },
   {
+   "symbol": "TPC",
+   "sector": null
+  },
+  {
    "symbol": "TR",
    "sector": null
   },
@@ -2284,6 +2280,10 @@
   },
   {
    "symbol": "VTOL",
+   "sector": null
+  },
+  {
+   "symbol": "VVX",
    "sector": null
   },
   {

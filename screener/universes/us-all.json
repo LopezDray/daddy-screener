@@ -1,6 +1,6 @@
 {
  "universe": "us-all",
- "count": 5559,
+ "count": 5562,
  "symbols": [
   {
    "symbol": "A",
@@ -667,10 +667,6 @@
    "sector": null
   },
   {
-   "symbol": "AIDX",
-   "sector": null
-  },
-  {
    "symbol": "AIFA",
    "sector": null
   },
@@ -1163,10 +1159,6 @@
    "sector": null
   },
   {
-   "symbol": "AMSS",
-   "sector": null
-  },
-  {
    "symbol": "AMST",
    "sector": null
   },
@@ -1388,6 +1380,10 @@
   },
   {
    "symbol": "APMC",
+   "sector": null
+  },
+  {
+   "symbol": "APMD",
    "sector": null
   },
   {
@@ -2004,10 +2000,6 @@
   },
   {
    "symbol": "AVLN",
-   "sector": null
-  },
-  {
-   "symbol": "AVNS",
    "sector": null
   },
   {
@@ -3863,6 +3855,10 @@
    "sector": null
   },
   {
+   "symbol": "CCCT",
+   "sector": null
+  },
+  {
    "symbol": "CCD",
    "sector": null
   },
@@ -3879,6 +3875,10 @@
    "sector": null
   },
   {
+   "symbol": "CCHH",
+   "sector": null
+  },
+  {
    "symbol": "CCI",
    "sector": null
   },
@@ -3888,10 +3888,6 @@
   },
   {
    "symbol": "CCII",
-   "sector": null
-  },
-  {
-   "symbol": "CCIX",
    "sector": null
   },
   {
@@ -4088,6 +4084,10 @@
   },
   {
    "symbol": "CETX",
+   "sector": null
+  },
+  {
+   "symbol": "CETY",
    "sector": null
   },
   {
@@ -5047,6 +5047,10 @@
    "sector": null
   },
   {
+   "symbol": "CRIS",
+   "sector": null
+  },
+  {
    "symbol": "CRK",
    "sector": null
   },
@@ -5491,10 +5495,6 @@
    "sector": null
   },
   {
-   "symbol": "CYPH",
-   "sector": null
-  },
-  {
    "symbol": "CYRX",
    "sector": null
   },
@@ -5748,6 +5748,10 @@
   },
   {
    "symbol": "DGII",
+   "sector": null
+  },
+  {
+   "symbol": "DGNX",
    "sector": null
   },
   {
@@ -6164,10 +6168,6 @@
   },
   {
    "symbol": "DUKR",
-   "sector": null
-  },
-  {
-   "symbol": "DUO",
    "sector": null
   },
   {
@@ -7303,10 +7303,6 @@
    "sector": null
   },
   {
-   "symbol": "FBLG",
-   "sector": null
-  },
-  {
    "symbol": "FBNC",
    "sector": null
   },
@@ -7675,10 +7671,6 @@
    "sector": null
   },
   {
-   "symbol": "FLUX",
-   "sector": null
-  },
-  {
    "symbol": "FLWS",
    "sector": null
   },
@@ -7848,10 +7840,6 @@
   },
   {
    "symbol": "FOXF",
-   "sector": null
-  },
-  {
-   "symbol": "FOXX",
    "sector": null
   },
   {
@@ -8079,6 +8067,10 @@
    "sector": null
   },
   {
+   "symbol": "FTRA",
+   "sector": null
+  },
+  {
    "symbol": "FTRE",
    "sector": null
   },
@@ -8148,6 +8140,10 @@
   },
   {
    "symbol": "FVRR",
+   "sector": null
+  },
+  {
+   "symbol": "FWAC",
    "sector": null
   },
   {
@@ -8296,6 +8292,10 @@
   },
   {
    "symbol": "GD",
+   "sector": null
+  },
+  {
+   "symbol": "GDC",
    "sector": null
   },
   {
@@ -8847,19 +8847,11 @@
    "sector": null
   },
   {
-   "symbol": "GPRO",
-   "sector": null
-  },
-  {
    "symbol": "GPUS",
    "sector": null
   },
   {
    "symbol": "GRAB",
-   "sector": null
-  },
-  {
-   "symbol": "GRAF",
    "sector": null
   },
   {
@@ -9079,6 +9071,10 @@
    "sector": null
   },
   {
+   "symbol": "GWAV",
+   "sector": null
+  },
+  {
    "symbol": "GWH",
    "sector": null
   },
@@ -9100,6 +9096,10 @@
   },
   {
    "symbol": "GXO",
+   "sector": null
+  },
+  {
+   "symbol": "GYGY",
    "sector": null
   },
   {
@@ -9735,6 +9735,10 @@
    "sector": null
   },
   {
+   "symbol": "HUBC",
+   "sector": null
+  },
+  {
    "symbol": "HUBS",
    "sector": null
   },
@@ -10159,6 +10163,10 @@
    "sector": null
   },
   {
+   "symbol": "IMC",
+   "sector": null
+  },
+  {
    "symbol": "IMCR",
    "sector": null
   },
@@ -10427,6 +10435,10 @@
    "sector": null
   },
   {
+   "symbol": "IOND",
+   "sector": null
+  },
+  {
    "symbol": "IONQ",
    "sector": null
   },
@@ -10500,6 +10512,10 @@
   },
   {
    "symbol": "IPST",
+   "sector": null
+  },
+  {
+   "symbol": "IPVV",
    "sector": null
   },
   {
@@ -10599,6 +10615,10 @@
    "sector": null
   },
   {
+   "symbol": "ISNR",
+   "sector": null
+  },
+  {
    "symbol": "ISOU",
    "sector": null
   },
@@ -10680,10 +10700,6 @@
   },
   {
    "symbol": "IVT",
-   "sector": null
-  },
-  {
-   "symbol": "IVVD",
    "sector": null
   },
   {
@@ -10900,6 +10916,10 @@
   },
   {
    "symbol": "JMIA",
+   "sector": null
+  },
+  {
+   "symbol": "JMKE",
    "sector": null
   },
   {
@@ -11491,10 +11511,6 @@
    "sector": null
   },
   {
-   "symbol": "LAB",
-   "sector": null
-  },
-  {
    "symbol": "LABT",
    "sector": null
   },
@@ -11859,10 +11875,6 @@
    "sector": null
   },
   {
-   "symbol": "LIQT",
-   "sector": null
-  },
-  {
    "symbol": "LITB",
    "sector": null
   },
@@ -12011,10 +12023,6 @@
    "sector": null
   },
   {
-   "symbol": "LOOP",
-   "sector": null
-  },
-  {
    "symbol": "LOPE",
    "sector": null
   },
@@ -12060,10 +12068,6 @@
   },
   {
    "symbol": "LPLA",
-   "sector": null
-  },
-  {
-   "symbol": "LPRO",
    "sector": null
   },
   {
@@ -12140,6 +12144,10 @@
   },
   {
    "symbol": "LTC",
+   "sector": null
+  },
+  {
+   "symbol": "LTGR",
    "sector": null
   },
   {
@@ -12348,10 +12356,6 @@
   },
   {
    "symbol": "MAMA",
-   "sector": null
-  },
-  {
-   "symbol": "MAMK",
    "sector": null
   },
   {
@@ -13307,6 +13311,10 @@
    "sector": null
   },
   {
+   "symbol": "MSS",
+   "sector": null
+  },
+  {
    "symbol": "MSTR",
    "sector": null
   },
@@ -13724,6 +13732,10 @@
   },
   {
    "symbol": "NCNO",
+   "sector": null
+  },
+  {
+   "symbol": "NCO",
    "sector": null
   },
   {
@@ -14292,10 +14304,6 @@
   },
   {
    "symbol": "NSP",
-   "sector": null
-  },
-  {
-   "symbol": "NSPR",
    "sector": null
   },
   {
@@ -14875,10 +14883,6 @@
    "sector": null
   },
   {
-   "symbol": "OMEX",
-   "sector": null
-  },
-  {
    "symbol": "OMF",
    "sector": null
   },
@@ -14904,10 +14908,6 @@
   },
   {
    "symbol": "ONCO",
-   "sector": null
-  },
-  {
-   "symbol": "ONCY",
    "sector": null
   },
   {
@@ -15068,10 +15068,6 @@
   },
   {
    "symbol": "ORKT",
-   "sector": null
-  },
-  {
-   "symbol": "ORLA",
    "sector": null
   },
   {
@@ -15388,6 +15384,10 @@
   },
   {
    "symbol": "PBA",
+   "sector": null
+  },
+  {
+   "symbol": "PBAM",
    "sector": null
   },
   {
@@ -16247,10 +16247,6 @@
    "sector": null
   },
   {
-   "symbol": "PRSO",
-   "sector": null
-  },
-  {
    "symbol": "PRSU",
    "sector": null
   },
@@ -16443,6 +16439,10 @@
    "sector": null
   },
   {
+   "symbol": "PWCM",
+   "sector": null
+  },
+  {
    "symbol": "PWP",
    "sector": null
   },
@@ -16592,10 +16592,6 @@
   },
   {
    "symbol": "QSEA",
-   "sector": null
-  },
-  {
-   "symbol": "QSI",
    "sector": null
   },
   {
@@ -16884,6 +16880,10 @@
   },
   {
    "symbol": "REED",
+   "sector": null
+  },
+  {
+   "symbol": "REF",
    "sector": null
   },
   {
@@ -17224,6 +17224,10 @@
   },
   {
    "symbol": "RNAC",
+   "sector": null
+  },
+  {
+   "symbol": "RNAZ",
    "sector": null
   },
   {
@@ -18699,10 +18703,6 @@
    "sector": null
   },
   {
-   "symbol": "SPWR",
-   "sector": null
-  },
-  {
    "symbol": "SPXC",
    "sector": null
   },
@@ -19811,6 +19811,10 @@
    "sector": null
   },
   {
+   "symbol": "TONT",
+   "sector": null
+  },
+  {
    "symbol": "TONX",
    "sector": null
   },
@@ -20831,10 +20835,6 @@
    "sector": null
   },
   {
-   "symbol": "VIOT",
-   "sector": null
-  },
-  {
    "symbol": "VIPS",
    "sector": null
   },
@@ -20872,10 +20872,6 @@
   },
   {
    "symbol": "VIVO",
-   "sector": null
-  },
-  {
-   "symbol": "VIVS",
    "sector": null
   },
   {
@@ -21064,6 +21060,10 @@
   },
   {
    "symbol": "VRXA",
+   "sector": null
+  },
+  {
+   "symbol": "VS",
    "sector": null
   },
   {
@@ -21815,6 +21815,10 @@
    "sector": null
   },
   {
+   "symbol": "XHLD",
+   "sector": null
+  },
+  {
    "symbol": "XHR",
    "sector": null
   },
@@ -22015,6 +22019,10 @@
    "sector": null
   },
   {
+   "symbol": "YMAT",
+   "sector": null
+  },
+  {
    "symbol": "YMM",
    "sector": null
   },
@@ -22064,6 +22072,10 @@
   },
   {
    "symbol": "YUMC",
+   "sector": null
+  },
+  {
+   "symbol": "YXT",
    "sector": null
   },
   {
