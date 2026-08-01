@@ -24,6 +24,7 @@ from screener.scoring import evaluate, INDEX_FOR
 from screener.patterns import detect_reversals
 from screener.stage import analyze_stage, MA_PERIOD
 from screener.levels import build_levels_row
+from screener.elliott import wave_code
 
 # เรดาร์กลับตัว (W3-11 P3) — จัดกลุ่ม pattern เป็น "ก่อยอด" / "ก่อฐาน"
 REVERSAL_GROUP = {
@@ -164,7 +165,10 @@ def _pace(throttle):
 def build_table_row(symbol, daily, weekly, monthly, wa, row, rev_lv, rev):
     """แถว quant compact (array) สำหรับ master table us-all — ทุกตัวที่ candle พอ + floor กันเศษ
     floor: dv20 ≥ $1M และ close ≥ $1 (กัน penny/ไม่มีสภาพคล่องจริง) · คืน None ถ้าตก floor
-    คอลัมน์ (ดู COLUMNS): [sym, close, dv20m, d_stage, w_stage, m_stage, w_conf, score, setup, near, rev]"""
+    คอลัมน์ (ดู COLUMNS): [sym, close, dv20m, d_stage, w_stage, m_stage, w_conf, score, setup, near, rev, ew]
+
+    `ew` = "กำลังเดินคลื่น" Elliott ณ วันสแกน ("3u"/"4u"/"3d"/"4d"/None) — CPU ล้วน 0 fetch เพิ่ม
+    ⚠️ คอลัมน์ใหม่ **ต่อท้ายเสมอ** — frontend อ่านตาม index คงที่ ถ้าแทรกกลางของเดิมจะเลื่อนหมด"""
     if len(daily) < 20:
         return None
     close = daily[-1]["close"]
@@ -186,12 +190,17 @@ def build_table_row(symbol, daily, weekly, monthly, wa, row, rev_lv, rev):
         top = next((r for r in rev if r["group"] == "top"), None)
         bottom = next((r for r in rev if r["group"] == "bottom"), None)
         rev_flag = "T" if top and not bottom else ("B" if bottom and not top else "TB")
+    # 🌊 นับคลื่นแบบยังไม่ครบ 5 — ตัวเดียวพังห้ามล้มทั้งแถว (ที่เหลือยังมีค่า)
+    try:
+        ew = wave_code(daily, "1d")
+    except Exception:  # noqa: BLE001
+        ew = None
     return [symbol, round(close, 2), dv20m, d_stage, w_stage, m_stage, w_conf,
-            score, setup, near, rev_flag]
+            score, setup, near, rev_flag, ew]
 
 
 TABLE_COLUMNS = ["sym", "close", "dv20m", "d_stage", "w_stage", "m_stage",
-                 "w_conf", "score", "setup", "near", "rev"]
+                 "w_conf", "score", "setup", "near", "rev", "ew"]
 
 
 def write_output(universe, results, scanned):
