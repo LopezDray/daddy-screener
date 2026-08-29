@@ -1,0 +1,121 @@
+# 🏠 wrapper ของ DaddyInvestor/.github/workflows/flow-regime-daily.yml (มติ owner 08-29 — repo public ⇒ Actions ฟรี)
+#   ตรรกะทั้งหมดอยู่ในสคริปต์ฝั่ง DaddyInvestor — checkout ผ่าน PAT read-only แล้วรันสคริปต์ตัวเดียวกัน
+#   แก้ logic = แก้ฝั่งโน้นที่เดียว · ไฟล์นี้เป็นเปลือก (คัดลอกทั้งไฟล์ + แก้ 2 จุด: gate + checkout)
+# ⚠️ log ของ repo public ใครก็อ่านได้ — ห้ามเพิ่ม step ที่พิมพ์ข้อมูลรายบุคคลของ user
+# gate: repo variable DADDY_BATCH_ON != '1' = ทุก run ถูก skip ฟรี
+
+name: Flow Regime — snapshot รายวัน (เงินโลกไหลไปไหน)
+
+# 🌊 Global Money Flow / Market Regime — แผน: .claude/memory/next-session-prompt-global-money-flow.md
+#
+# GOAL:      snapshot ของวันล่าสุดใน flow_regime_snapshot มีสินทรัพย์ที่คำนวณได้ ≥ 8 ตัว
+#            + liquidity / credit / roro ไม่เป็น null
+# VERIFY:    compute_flow_regime.py มี sanity_check() ในตัว — ค่าไหนหลุดช่วงสมเหตุสมผล
+#            (NL 2,000-12,000bn · HY 100-2,000bp · |z| < 6 · score 0-100) = exit 1 **ไม่เขียน DB**
+# STOP WHEN: สำเร็จ 1 รอบ/วัน · fail = จบรอบนั้น ไม่ retry (รอ cron วันถัดไป)
+# ON STOP:   fail → job แดงใน Actions (owner เห็นเอง) · **fail ไม่ยิง Telegram**
+#            (ตั้งใจเงียบ: ข้อมูลเก่า 1 วันไม่ใช่เหตุฉุกเฉิน — หน้าเว็บเสิร์ฟ snapshot วันก่อนต่อได้)
+# 🔔 เฟส 1 (08-28): รันสำเร็จ + regime พลิกครั้งใหญ่ (การ์ดข้ามฝั่ง bull↔bear ·
+#            crowded_unwind โผล่ใหม่ · liquidity พลิก inject↔drain · credit เข้า stress)
+#            → Telegram หา owner คนเดียว (flow_alerts.py · hysteresis ใน payload.meta.alert_state)
+#            เฟส 2 (กระดิ่ง/push PRO) รอสังเกตความถี่จริง 2-4 สัปดาห์ก่อน — ยังไม่ทำ
+#
+# 💵 ต้นทุน: FRED (keyless CSV) · CFTC · SPDR · DeFiLlama · Binance = **ฟรีทั้งหมด**
+#            FMP **0 call** (ไม่เข้าเกณฑ์กฎ 10) · อ่าน Supabase ~15 symbol ไม่ใช่ per-stock
+#            (ไม่เข้าเกณฑ์กฎ 11) · Yahoo ~30 call/รอบ ผ่าน mirror ที่ข้ามตัวที่ยังสดอยู่แล้ว
+
+on:
+  schedule:
+    # 22:30 UTC จันทร์-ศุกร์ = 05:30 ไทย · หลัง refresh-levels-postclose (21:00 UTC)
+    #   เจตนา: ให้ราคาปิด finalize เข้า candle_cache ก่อน แล้วค่อยคำนวณเทรนด์
+    #   ⚠️ ฤดูหนาว (EST) ตลาดปิด 21:00 UTC → ยังห่างพอ 90 นาที ไม่ต้องเลื่อน
+    - cron: "30 22 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'branch/SHA ที่จะ checkout (ว่าง = main)'
+        required: false
+        default: ''
+      apply:
+        description: 'yes = เขียน Supabase จริง · no = คำนวณ+ตรวจอย่างเดียว'
+        required: false
+        default: 'yes'
+      skip_mirror:
+        description: 'yes = ข้ามขั้นเติมราคา (ใช้ตอน debug สูตรอย่างเดียว)'
+        required: false
+        default: 'no'
+      list_cot:
+        description: 'yes = ดัมพ์ชื่อ+รหัสสัญญา COT แล้วจบ (ใช้ตอนรหัสสัญญาเปลี่ยน)'
+        required: false
+        default: 'no'
+      diag_gld:
+        description: 'yes = ดัมพ์ลิงก์ไฟล์บนเว็บ SPDR แล้วจบ (ใช้ตอนพาธ GLD เปลี่ยน)'
+        required: false
+        default: 'no'
+      test_alert:
+        description: 'yes = ส่งข้อความทดสอบเข้า Telegram แล้วจบ (เช็คว่า secret ใช้ได้)'
+        required: false
+        default: 'no'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flow-regime-daily
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    if: vars.DADDY_BATCH_ON == '1'
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: LopezDray/DaddyInvestor
+          token: ${{ secrets.DADDY_READ_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 🔎 ดัมพ์รหัสสัญญา COT (โหมด debug — ไม่แตะ DB)
+        if: ${{ github.event.inputs.list_cot == 'yes' }}
+        run: python scripts/compute_flow_regime.py --list-cot
+
+      - name: 🔎 ดัมพ์ลิงก์ไฟล์ SPDR (โหมด debug — ไม่แตะ DB)
+        if: ${{ github.event.inputs.diag_gld == 'yes' }}
+        run: python scripts/compute_flow_regime.py --diag-gld
+
+      - name: 🧪 ส่งข้อความทดสอบเข้า Telegram (โหมด debug — ไม่แตะ DB)
+        if: ${{ github.event.inputs.test_alert == 'yes' }}
+        run: python scripts/flow_alerts.py --test
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+      - name: 🧪 เทสสูตร (offline — ต้องเขียวก่อนถึงจะยอมเขียน DB)
+        if: ${{ github.event.inputs.list_cot != 'yes' && github.event.inputs.diag_gld != 'yes' && github.event.inputs.test_alert != 'yes' }}
+        run: python -m unittest tests.test_flow_regime -v
+
+      - name: 📈 เติมราคาปิดของสินทรัพย์ระดับบนเข้า candle_cache
+        if: ${{ github.event.inputs.list_cot != 'yes' && github.event.inputs.diag_gld != 'yes' && github.event.inputs.test_alert != 'yes' && github.event.inputs.skip_mirror != 'yes' }}
+        # ข้ามตัวที่ cache ยังสดอยู่แล้วโดยอัตโนมัติ (กฎ 11 — ไม่ยิงซ้ำของเดิม)
+        run: python scripts/mirror_candle_cache.py --groups macro_flow,indices,bench --apply
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: 🌊 คำนวณ + เขียน snapshot (+ 🔔 เตือน Telegram ถ้า regime พลิก)
+        if: ${{ github.event.inputs.list_cot != 'yes' && github.event.inputs.diag_gld != 'yes' && github.event.inputs.test_alert != 'yes' }}
+        run: |
+          if [ "${{ github.event.inputs.apply }}" = "no" ]; then
+            python scripts/compute_flow_regime.py
+          else
+            python scripts/compute_flow_regime.py --apply
+          fi
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}

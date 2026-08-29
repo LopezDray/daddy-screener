@@ -1,0 +1,223 @@
+# 🏠 wrapper ของ DaddyInvestor/.github/workflows/earnings-brief-staleness.yml (มติ owner 08-29 — repo public ⇒ Actions ฟรี)
+#   ตรรกะทั้งหมดอยู่ในสคริปต์ฝั่ง DaddyInvestor — checkout ผ่าน PAT read-only แล้วรันสคริปต์ตัวเดียวกัน
+#   แก้ logic = แก้ฝั่งโน้นที่เดียว · ไฟล์นี้เป็นเปลือก (คัดลอกทั้งไฟล์ + แก้ 2 จุด: gate + checkout)
+# ⚠️ log ของ repo public ใครก็อ่านได้ — ห้ามเพิ่ม step ที่พิมพ์ข้อมูลรายบุคคลของ user
+# gate: repo variable DADDY_BATCH_ON != '1' = ทุก run ถูก skip ฟรี
+
+name: Earnings Brief — weekly recheck + auto-gen
+
+# บรีฟงบผูกรอบไตรมาส แต่เดิม "ต้องมีคนกด" ถึงจะได้บรีฟใหม่ (cron เดือนละครั้งแค่เตือน Telegram)
+# → หุ้นที่งบใหม่ออกแล้วค้างเป็นสัปดาห์ๆ + หุ้นดังนอก targets list ไม่เคยได้บรีฟเลย
+#   (RKLB ถูกค้น 1,322 ครั้ง = อันดับ 2 ของเว็บ แต่ไม่อยู่ใน earnings_brief_targets.txt)
+#
+# ตัวนี้: ทุกเสาร์ เทียบ accession งบล่าสุด (SEC gov) กับบรีฟใน DB → ตัวที่งบใหม่มาแล้ว
+#   → auto-generate ตาม impact rank (คนค้นมากก่อน) เพดาน auto_max ตัว/รอบ
+#   → ส่วนที่เกินเพดาน = Telegram ให้เจ้าของเคาะทีเดียวเหมือนเดิม
+#
+# 💵 ~$0.15/บรีฟ × เพดาน (default 10) ≈ ~$1.5/สัปดาห์ · rag-embed = Voyage free · ตรวจ = $0
+# 🛑 kill-switch: repo variable AUTO_BRIEF_DISABLED=1 (Settings → Variables) = ปิด auto-gen ทันที
+#    ไม่ต้องแก้โค้ด · หรือ manual run เลือก auto_gen=off (ตรวจอย่างเดียว $0)
+# ♻️ ไม่เจนซ้ำ 2 ชั้น: accession ตรง = ข้ามตั้งแต่ตอนตรวจ · generate ใช้ --skip-fresh เช็คซ้ำก่อนจ่าย
+
+on:
+  workflow_dispatch:
+    inputs:
+      auto_gen:
+        description: "auto-generate บรีฟที่งบใหม่มาแล้ว (on = เสียเงิน · off = ตรวจอย่างเดียว \\$0)"
+        required: false
+        type: choice
+        options: ['on', 'off']
+        default: 'on'
+      auto_max:
+        description: "เพดานบรีฟที่ auto-gen รอบนี้ (~\\$0.075/ตัว ด้วย Batch API)"
+        required: false
+        # 08-08: 10 → 20 · รอบ 08-08 เจน 10 แต่ค้างรอเคาะ **74 ตัว** ⇒ ตัวท้ายคิวไม่มีวันได้คิว
+        #   (ทุกสัปดาห์มีตัว impact สูงกว่าแซง)
+        # 🔑 เพดานนี้ต้อง **จับคู่กับ rank_min เสมอ** — กองใหญ่กว่าที่เพดานรองรับ = คิวค้างถาวร:
+        #      กอง N ตัว × 4 ไตรมาส × ~85% (ที่เป็น SEC filer จริง) ÷ 52 = ต้องเจนกี่ตัว/สัปดาห์
+        #      กอง 284 → 19/สัปดาห์ (เพดาน 20 พอดี ✅) · กอง 429 → 28 (เพดาน 20 = ขาด 30% 🔴)
+        default: "20"
+      rank_min:
+        description: "กอง = targets ∪ หุ้นที่ user ค้น ≥ N ครั้ง"
+        required: false
+        # 08-09: 10 → 50 · กอง 429 → 284 ตัว — ให้ตรงกับเพดาน auto_max 20 (ดูสูตรข้างบน)
+        #   วัดจาก data/impact_rank.json (ยอดค้นรวม 37,217 ครั้ง บน 1,620 หุ้น):
+        #     กอง 284 (≥50)  → ครอบ demand ที่ user ค้นจริง 82.2%
+        #     กอง 429 (≥10)  → 90.3%  ← +145 ตัว แลกแค่ +8% แต่ทำให้คิวค้างถาวร
+        #     กอง 1,624 (ทุกตัว) → 100% (หางยาว 961 ตัวสุดท้ายได้แค่ +5.7%)
+        #   ⚠️ ถ้าจะขยายกองกลับเป็น 429 ต้องขึ้น auto_max เป็น ~30 พร้อมกัน ไม่งั้นคิวค้างเหมือนเดิม
+        default: "50"
+      recent_only:
+        description: "ตรวจเฉพาะตัวที่ยื่นเอกสาร ≤ N วัน (0 = สแกนเต็มกอง ~21 นาที · default)"
+        required: false
+        # 08-11: 10 → 0 · prefilter ตกหล่นจริง **24 ตัว** (วัดแล้ว ไม่ใช่ทฤษฎี) — ดูเหตุผลที่ step
+        #   "Decide scan mode" · ค่านี้ต้องตรงกับ fallback `||` ที่นั่นเสมอ (บั๊กคลาส #1)
+        default: "0"
+  schedule:
+    # ทุกเสาร์ 03:00 UTC = 10:00 ไทย — หลัง impact-list.yml (เสาร์ 01:00 UTC) ที่ regen
+    # data/impact_rank.json → คิว auto-gen ใช้ยอดค้นสดเสมอ
+    - cron: "0 3 * * 6"
+
+permissions:
+  contents: read
+
+jobs:
+  staleness:
+    runs-on: ubuntu-latest
+    if: vars.DADDY_BATCH_ON == '1'
+    # 08-11: 60 → 80 · สแกนเต็มกองทุกสัปดาห์แล้ว (~21 น. วัดจริงจาก run 31460589341)
+    #   21 ตรวจ + ~2 prepare + 35 รอ batch = 58 น. = ชิดขอบ 60 เกินไป (batch ช้าอีกนิดเดียวก็โดนตัด)
+    timeout-minutes: 80
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: LopezDray/DaddyInvestor
+          token: ${{ secrets.DADDY_READ_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 🔴 08-11: เลิกใช้ prefilter ในรอบ cron — สแกนเต็มกองทุกสัปดาห์ (owner เคาะ)
+      #
+      # เดิม: เต็มกองเฉพาะสัปดาห์แรกของเดือน (วันที่ ≤ 7) · ที่เหลือ prefilter 10 วัน
+      # ปัญหาที่วัดได้จริง (รอบเทียบ 08-08 prefilter vs 08-11 เต็มกอง): **ตกหล่น 24 ตัว**
+      #   ที่ยื่นงบก่อน 08-08 แล้วแต่ prefilter มองไม่เห็น — SNDK(ค้น 474) TE(220) NVO(101)
+      #   ALAB(89) TEM(73) XOM RDDT SHOP DKNG LHX ... = ค้างงวดเงียบ ๆ ทั้งเดือน
+      # ต้นเหตุเชิงโครงสร้าง (ไม่ใช่ของเดือนนี้เดือนเดียว): รอบเต็มไปตกวันที่ ≤7 ของเดือน
+      #   แต่บริษัทยื่นงบไตรมาสกันปลายเดือน–ต้นเดือนถัดไป ⇒ **พีคงบตกอยู่ในช่วงที่ prefilter คุม
+      #   พอดีทุกไตรมาส** · ส.ค.69: รอบเต็มล่าสุด 1 ส.ค. → พีคงบ 4-7 ส.ค. → รอบเต็มถัดไป 5 ก.ย.
+      # เหตุผลเดิมที่ต้อง prefilter (sec_filings ครอบเฉพาะ notify universe) ยังจริง — แต่มันเป็น
+      #   เหตุผลให้ "อย่าเชื่อ prefilter" ไม่ใช่ "ใช้ prefilter" · สแกนเต็ม = $0 เท่ากัน
+      #   (ยิง SEC.gov ล้วน ไม่เรียก AI ไม่แตะ FMP) แลกแค่ Actions ~9 นาที/สัปดาห์
+      # ยังกดมือเลือก prefilter ได้ (recent_only=10) ตอนอยากได้ผลไว ๆ
+      - name: Decide scan mode
+        id: mode
+        run: |
+          # 🔴 ค่าหลัง `||` คือค่าที่รอบ cron ใช้จริง — ต้องตรงกับ `default:` ข้างบนเสมอ
+          RECENT="${{ github.event.inputs.recent_only || '0' }}"
+          if [ "$RECENT" = "0" ]; then
+            echo "🔍 สแกนเต็มกอง (~21 นาที · \$0 — ไม่มีตัวไหนหลุด)"
+          else
+            echo "⚡ prefilter: ตรวจเฉพาะที่ยื่นเอกสาร ≤ $RECENT วัน (เร็วกว่าแต่ตกหล่นได้)"
+          fi
+          echo "recent=$RECENT" >> "$GITHUB_OUTPUT"
+
+      - name: Check brief staleness (accession vs SEC · $0)
+        id: check
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          python scripts/gen_earnings_brief.py --stale \
+            --impact=${{ github.event.inputs.rank_min || '50' }} \
+            --auto-max=${{ github.event.inputs.auto_max || '20' }} \
+            --recent-only=${{ steps.mode.outputs.recent }}
+          # 🔴 ค่าหลัง `||` คือค่าที่ **รอบ schedule ใช้จริง** — ตอน cron ยิง `github.event.inputs.*`
+          #    ว่างเปล่า ทำให้ `default:` ในบล็อก inputs **ไม่มีผลเลย** (มีผลเฉพาะตอนกดมือ)
+          #    ⇒ ต้อง sync 2 ที่เสมอ · 08-09 เจอว่าเดิมค้างที่ 20/10 คนละค่ากับ default ที่แก้ไป
+
+      # ── auto-generate: reuse ท่อเดียวกับ earnings-brief-generate.yml ทั้งดุ้น ──
+      - name: Auto-generate briefs (งบใหม่มาแล้ว · เรียงตาม impact rank)
+        id: gen
+        if: >-
+          steps.check.outputs.auto_list != '' &&
+          vars.AUTO_BRIEF_DISABLED != '1' &&
+          github.event.inputs.auto_gen != 'off'
+        env:
+          ANTHROPIC_API_KEY:    ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          AUTO: ${{ steps.check.outputs.auto_list }}
+        run: |
+          echo "▶ auto-generate: $AUTO"
+          # --skip-fresh = กันจ่ายซ้ำอีกชั้น (เช็คใน prepare() ก่อนยิง Claude)
+          # 🪙 08-09: --batch = Batch API ราคาครึ่งเดียว ($0.15 → $0.075/บรีฟ ≈ ฿2.5)
+          #    งานรายสัปดาห์รอได้ · submit เสร็จ poll จนจบ แล้ว step rag-embed/กระดิ่งทำงานต่อในรันเดียว
+          #    wait-min=35: job timeout 80 น. − step ตรวจ ~21 น. (เต็มกอง) − prepare ~5 น. = เหลือ ~54 เผื่อไว้เยอะ
+          #    ถ้าไม่จบใน 35 น. → emit `pending_batch` (Telegram เตือน) แล้วเก็บผลด้วย
+          #    workflow "Earnings Brief — generate / check" mode=batch-collect
+          python scripts/gen_earnings_brief.py $AUTO --skip-fresh --batch --wait-min=35
+
+      # auto-embed: บรีฟใหม่ → rag_chunks + flush qa_cache ทันที → RAY ตอบไตรมาสใหม่ได้ในรันเดียว
+      - name: Auto-embed generated briefs (Voyage free)
+        if: steps.gen.outputs.generated != ''
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          VOYAGE_API_KEY:       ${{ secrets.VOYAGE_API_KEY }}
+          GEN: ${{ steps.gen.outputs.generated }}
+        run: |
+          echo "▶ rag-embed (บรีฟใหม่): $GEN"
+          python scripts/rag_embed.py $GEN --prune || echo "⚠️ rag-embed พลาด (ไม่ block — cron อาทิตย์เก็บตก)"
+
+      # กระดิ่งบรีฟงบใหม่ → หุ้นที่ user ถือ/ติดตาม (📑 type=earnings · min_tier=plus) · ไม่ block
+      - name: Notify bell (บรีฟงบใหม่)
+        if: steps.gen.outputs.generated != ''
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GEN: ${{ steps.gen.outputs.generated }}
+        run: |
+          echo "▶ notify บรีฟงบใหม่: $GEN"
+          python scripts/notify_earnings_brief.py $GEN || echo "⚠️ notify พลาด (ไม่ block)"
+
+      # user อาจกดขอบรีฟตัวเดียวกันไว้ค้างอยู่ → ปิดคำขอให้ด้วย จะได้ไม่ค้างในคิว
+      - name: ปิดคำขอ on-demand (brief_requests)
+        if: steps.gen.outputs.generated != ''
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GEN: ${{ steps.gen.outputs.generated }}
+        run: |
+          python scripts/mark_brief_requests.py --ok "$GEN" || true
+
+      - name: Telegram report
+        if: ${{ always() && (steps.check.outputs.auto_count != '0' || steps.check.outputs.held_count != '0') }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GEN:        ${{ steps.gen.outputs.generated }}
+          PENDING:    ${{ steps.gen.outputs.pending_batch }}
+          AUTO_LIST:  ${{ steps.check.outputs.auto_list }}
+          HELD_COUNT: ${{ steps.check.outputs.held_count }}
+          HELD_LIST:  ${{ steps.check.outputs.held_list }}
+        run: |
+          set -euo pipefail
+          # 🔴 PENDING ต้องเช็ค **ก่อน** GEN — batch ที่ poll ไม่ทันคืน generated ว่าง
+          #    ถ้าไม่ดักตรงนี้ ข้อความจะกลายเป็น "ไม่มีบรีฟค้างงวด" ทั้งที่จ่ายเงินไปแล้วและงานค้างอยู่
+          if [ -n "${PENDING:-}" ]; then
+            DONE=$(printf '⏳ batch ยังไม่จบใน 35 นาที — ยังไม่เข้า DB / ยังไม่เด้งกระดิ่ง\n   เก็บผล: Actions → "Earnings Brief — generate / check" → mode=batch-collect\n   batch_id = %s' "$PENDING")
+          elif [ -n "${GEN:-}" ]; then
+            DONE="🤖 เจนอัตโนมัติแล้ว (Batch -50%): ${GEN}"
+          elif [ -n "${AUTO_LIST:-}" ]; then
+            DONE="⏸️ ไม่ได้เจน (auto_gen=off หรือ kill-switch): ${AUTO_LIST}"
+          else
+            DONE="✅ ไม่มีบรีฟค้างงวด"
+          fi
+          MESSAGE=$(printf "📑 DaddyInvestor — บรีฟงบรอบสัปดาห์\n\n%s\n\n🕑 เกินเพดาน รอเคาะ %s ตัว:\n%s\n\nเคาะเอง: Actions → \"Earnings Brief — generate / check\" → mode=generate (~\$0.15/ตัว)\nUTC: %s" \
+            "$DONE" "${HELD_COUNT:-0}" "${HELD_LIST:--}" "$(date -u '+%Y-%m-%d %H:%M')")
+          printf "%s\n" "$MESSAGE"
+          if [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && [ -n "${TELEGRAM_CHAT_ID:-}" ]; then
+            curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+              --data-urlencode "text=${MESSAGE}" > /dev/null || echo "Telegram report failed"
+          else
+            echo "Telegram secrets not configured; report logged only"
+          fi
+
+      # แจ้งพังทาง Telegram — ฝั่ง DaddyInvestor มี ingest-failure-alert (workflow_run) เฝ้าตัวต้นฉบับ
+      # แต่มันมองไม่เห็น run ของ repo นี้ ⇒ ใส่ตรงนี้แทน · ไม่มี secret = ข้ามเงียบ (ไม่บังคับ)
+      - name: Telegram แจ้งเมื่อพัง
+        if: failure()
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$TG_TOKEN" ]; then echo "ไม่มี TELEGRAM_BOT_TOKEN — ข้าม"; exit 0; fi
+          curl -sS -m 15 "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            -d chat_id="${TG_CHAT}" \
+            -d text="🔴 daddy-screener: ${{ github.workflow }} พัง — ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            >/dev/null || true

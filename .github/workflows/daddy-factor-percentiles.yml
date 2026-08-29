@@ -1,0 +1,59 @@
+# 🏠 wrapper ของ DaddyInvestor/.github/workflows/factor-percentiles.yml (มติ owner 08-29 — repo public ⇒ Actions ฟรี)
+#   ตรรกะทั้งหมดอยู่ในสคริปต์ฝั่ง DaddyInvestor — checkout ผ่าน PAT read-only แล้วรันสคริปต์ตัวเดียวกัน
+#   แก้ logic = แก้ฝั่งโน้นที่เดียว · ไฟล์นี้เป็นเปลือก (คัดลอกทั้งไฟล์ + แก้ 2 จุด: gate + checkout)
+# ⚠️ log ของ repo public ใครก็อ่านได้ — ห้ามเพิ่ม step ที่พิมพ์ข้อมูลรายบุคคลของ user
+# gate: repo variable DADDY_BATCH_ON != '1' = ทุก run ถูก skip ฟรี
+
+name: Factor Percentiles
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "ตรวจแค่ N ตัวแรก (0 = ทั้ง universe) — ต้องคู่กับ dry_run=true"
+        required: false
+        default: "0"
+      dry_run:
+        description: 'พิมพ์สรุปอย่างเดียว ไม่ upsert (true/false)'
+        required: false
+        default: "false"
+  schedule:
+    # รายสัปดาห์ อาทิตย์ 03:00 UTC — หลัง update-sec-financials (02:00) เพื่อใช้งบล่าสุด
+    - cron: "0 3 * * 0"
+
+permissions:
+  contents: read
+
+jobs:
+  compute:
+    name: Compute factor percentiles
+    runs-on: ubuntu-latest
+    if: vars.DADDY_BATCH_ON == '1'
+    # 08-26: universe จริง 914 ตัว (คอมเมนต์เก่าเขียน 534) × (worker call + delay 0.25s)
+    # งานเป็น all-or-nothing (fetch ครบก่อนแล้วค่อย upsert) ⇒ โดน timeout = เสียทั้งรอบ
+    # แล้วต้องรอสัปดาห์หน้า จึงเผื่อเวลาให้พอจริง
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: LopezDray/DaddyInvestor
+          token: ${{ secrets.DADDY_READ_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compute + upsert factor_percentiles
+        env:
+          WORKER_BASE_URL: https://daddy-asset-worker.n-riyaud.workers.dev
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          # เทสสูตรในตัวก่อนเสมอ ($0 ไม่ยิงเน็ต) — ทิศทาง percentile กลับด้าน = การ์ดโกหกทั้งใบ
+          python scripts/compute_factor_percentiles.py --self-test
+          ARGS="--limit ${{ github.event.inputs.limit || '0' }}"
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          # 08-26: --limit แบบไม่ dry-run จะถูกสคริปต์บล็อกเอง (pool ไม่ครบ = percentile ไม่มีความหมาย)
+          python scripts/compute_factor_percentiles.py $ARGS

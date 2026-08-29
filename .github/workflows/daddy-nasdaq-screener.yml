@@ -1,0 +1,34 @@
+# 🏠 wrapper ของ DaddyInvestor/.github/workflows/nasdaq-screener.yml (มติ owner 08-29 — repo public ⇒ Actions ฟรี)
+#   ตรรกะทั้งหมดอยู่ในสคริปต์ฝั่ง DaddyInvestor — checkout ผ่าน PAT read-only แล้วรันสคริปต์ตัวเดียวกัน
+#   แก้ logic = แก้ฝั่งโน้นที่เดียว · ไฟล์นี้เป็นเปลือก (คัดลอกทั้งไฟล์ + แก้ 2 จุด: gate + checkout)
+# ⚠️ log ของ repo public ใครก็อ่านได้ — ห้ามเพิ่ม step ที่พิมพ์ข้อมูลรายบุคคลของ user
+# gate: repo variable DADDY_BATCH_ON != '1' = ทุก run ถูก skip ฟรี
+
+name: NASDAQ100 Stage Screener
+
+on:
+  # ตลาด US ปิด 03:00-04:00 BKK → รัน 05:00 BKK = 22:00 UTC
+  schedule:
+    - cron: '0 22 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    if: vars.DADDY_BATCH_ON == '1'
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: LopezDray/DaddyInvestor
+          token: ${{ secrets.DADDY_READ_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Scan NASDAQ100 stages
+        run: python scripts/scan_nasdaq_screener.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}

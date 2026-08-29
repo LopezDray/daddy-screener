@@ -1,0 +1,143 @@
+# 🏠 wrapper ของ DaddyInvestor/.github/workflows/update-sec-filings.yml (มติ owner 08-29 — repo public ⇒ Actions ฟรี)
+#   ตรรกะทั้งหมดอยู่ในสคริปต์ฝั่ง DaddyInvestor — checkout ผ่าน PAT read-only แล้วรันสคริปต์ตัวเดียวกัน
+#   แก้ logic = แก้ฝั่งโน้นที่เดียว · ไฟล์นี้เป็นเปลือก (คัดลอกทั้งไฟล์ + แก้ 2 จุด: gate + checkout)
+# ⚠️ log ของ repo public ใครก็อ่านได้ — ห้ามเพิ่ม step ที่พิมพ์ข้อมูลรายบุคคลของ user
+# gate: repo variable DADDY_BATCH_ON != '1' = ทุก run ถูก skip ฟรี
+
+name: Update SEC Filings (Form 4 + 8-K/6-K)
+
+on:
+  workflow_dispatch:
+    inputs:
+      symbols:
+        description: 'Symbols (space-separated). Empty = use default lists'
+        required: false
+        default: ''
+      since_days:
+        description: 'Days to look back — 3=daily, 365=first-time backfill'
+        required: false
+        default: '3'
+      form_type:
+        description: 'Form type — US stocks: form4/8k, FPI (TSM/ASML/ARM): 6k'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - form4
+          - 8k
+          - 6k
+      push_dry_run:
+        description: 'Push: dry-run (คำนวณ recipient ไม่เด้งจริง)'
+        required: false
+        default: 'false'
+  schedule:
+    - cron: "0 23 * * 1,3,5"  # จ/พ/ศ 23:00 UTC — ลด Actions minutes (~320 นาที/เดือน, audit 07-07) · gap ศ→จ = 3 วัน พอดีกับ since_days=3 default (ไม่ตกหล่น) · push หา user ช้าสุด ~3 วัน
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false  # กันรันซ้อน (manual dispatch ชนกับ cron) — คิวรอแทนที่จะยกเลิกกลางคันขณะเขียน DB
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    if: vars.DADDY_BATCH_ON == '1'
+    timeout-minutes: 100
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: LopezDray/DaddyInvestor
+          token: ${{ secrets.DADDY_READ_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: '.github/workflows/update-sec-filings.yml'
+
+      - name: Install dependencies
+        run: pip install psycopg2-binary pywebpush
+
+      - name: Load notify universe from Supabase (transcripts ∪ watchlist ∪ portfolios)
+        id: symbols
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          # F5 (review #4 R2): รวมหุ้นที่ user watch/ถือ (ไม่ใช่แค่มี transcript) → filing หุ้นเล็กเข้า pipeline
+          #   หุ้นที่ไม่มี CIK (ไทย/คริปโต/junk) → fetch_sec_filings ข้ามเองเร็วๆ (gov/$0)
+          SYMBOLS_JSON=$(python scripts/notify_universe.py)
+          echo "list=$SYMBOLS_JSON" >> $GITHUB_OUTPUT
+          echo "Notify universe: $(printf '%s' "$SYMBOLS_JSON" | wc -w) symbols"
+
+      - name: Fetch Form 4 — notify universe (transcripts ∪ watchlist ∪ portfolios)
+        if: github.event_name == 'schedule' || github.event.inputs.form_type == 'all' || github.event.inputs.form_type == 'form4' || github.event.inputs.form_type == ''
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          SYMBOLS="${{ github.event.inputs.symbols || steps.symbols.outputs.list }}"
+          SINCE="${{ github.event.inputs.since_days || '4' }}"
+          echo "Form 4 → symbols: $SYMBOLS | since: ${SINCE}d"
+          python scripts/fetch_sec_filings.py $SYMBOLS --form 4 --since-days $SINCE
+
+      - name: Fetch 8-K — notify universe (transcripts ∪ watchlist ∪ portfolios)
+        if: github.event_name == 'schedule' || github.event.inputs.form_type == 'all' || github.event.inputs.form_type == '8k' || github.event.inputs.form_type == ''
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          SYMBOLS="${{ github.event.inputs.symbols || steps.symbols.outputs.list }}"
+          SINCE="${{ github.event.inputs.since_days || '4' }}"
+          echo "8-K → symbols: $SYMBOLS | since: ${SINCE}d"
+          python scripts/fetch_sec_filings.py $SYMBOLS --since-days $SINCE
+
+      - name: Fetch 6-K — Foreign Private Issuers
+        if: github.event_name == 'schedule' || github.event.inputs.form_type == 'all' || github.event.inputs.form_type == '6k' || github.event.inputs.form_type == ''
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          SYMBOLS="${{ github.event.inputs.symbols || 'ARM TSEM ASML TSM ESLT' }}"
+          SINCE="${{ github.event.inputs.since_days || '4' }}"
+          echo "6-K → symbols: $SYMBOLS | since: ${SINCE}d"
+          python scripts/fetch_sec_filings.py $SYMBOLS --form 6-K --since-days $SINCE
+
+      - name: Send Push Notifications for new filings
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
+          VAPID_SUBJECT: "mailto:admin@daddyinvestor.net"
+        run: |
+          FLAGS=""
+          [ "${{ github.event.inputs.push_dry_run }}" = "true" ] && FLAGS="--dry-run"
+          echo "Sending personalized push for new SEC filings... $FLAGS"
+          python scripts/send_push_notifications.py $FLAGS
+
+      # แจ้งพังทาง Telegram — ฝั่ง DaddyInvestor มี ingest-failure-alert (workflow_run) เฝ้าตัวต้นฉบับ
+      # แต่มันมองไม่เห็น run ของ repo นี้ ⇒ ใส่ตรงนี้แทน · ไม่มี secret = ข้ามเงียบ (ไม่บังคับ)
+      - name: Telegram แจ้งเมื่อพัง
+        if: failure()
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$TG_TOKEN" ]; then echo "ไม่มี TELEGRAM_BOT_TOKEN — ข้าม"; exit 0; fi
+          curl -sS -m 15 "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            -d chat_id="${TG_CHAT}" \
+            -d text="🔴 daddy-screener: ${{ github.workflow }} พัง — ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            >/dev/null || true
