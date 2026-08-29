@@ -61,7 +61,7 @@ jobs:
           cache-dependency-path: '.github/workflows/update-sec-filings.yml'
 
       - name: Install dependencies
-        run: pip install psycopg2-binary pywebpush
+        run: pip install psycopg2-binary   # 08-29: ถอด pywebpush — step push ย้ายกลับ DaddyInvestor แล้ว
 
       - name: Load notify universe from Supabase (transcripts ∪ watchlist ∪ portfolios)
         id: symbols
@@ -114,19 +114,14 @@ jobs:
           echo "6-K → symbols: $SYMBOLS | since: ${SINCE}d"
           python scripts/fetch_sec_filings.py $SYMBOLS --form 6-K --since-days $SINCE
 
-      - name: Send Push Notifications for new filings
-        if: always()
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
-          VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
-          VAPID_SUBJECT: "mailto:admin@daddyinvestor.net"
-        run: |
-          FLAGS=""
-          [ "${{ github.event.inputs.push_dry_run }}" = "true" ] && FLAGS="--dry-run"
-          echo "Sending personalized push for new SEC filings... $FLAGS"
-          python scripts/send_push_notifications.py $FLAGS
+      # 🔕 08-29: step ส่ง push ถูกย้ายกลับไป DaddyInvestor แล้ว (sec-filings-push.yml ·
+      #   cron 50 23 * * 1,3,5 = 50 นาทีหลัง ingest นี้) — เหตุผล: VAPID_PRIVATE_KEY ย้ายมา
+      #   repo นี้ไม่ได้ (GitHub secret เป็น write-only อ่านค่ากลับไม่ได้ · หมุนคีย์คู่ใหม่ =
+      #   subscription ของ user ทุกเครื่องพัง) ⇒ ingest หนัก ๆ รันฟรีที่นี่ · push เบา ๆ รันที่โน่น
+      #   ที่มีคีย์อยู่แล้ว · ทำได้เพราะ send_push_notifications.py อ่าน sec_filings จาก Supabase
+      #   ล้วน ไม่ผูกกับ step ingest
+      # 🔴 ห้ามเพิ่ม step push กลับเข้ามาที่นี่ — จะกลายเป็นผู้ส่ง 2 ตัว = user โดนเด้งซ้ำ
+      #   (send_push_notifications.py ไม่มี dedupe ชั้น push)
 
       # แจ้งพังทาง Telegram — ฝั่ง DaddyInvestor มี ingest-failure-alert (workflow_run) เฝ้าตัวต้นฉบับ
       # แต่มันมองไม่เห็น run ของ repo นี้ ⇒ ใส่ตรงนี้แทน · ไม่มี secret = ข้ามเงียบ (ไม่บังคับ)
