@@ -1,0 +1,62 @@
+name: Daddy — Update IPO Calendar (SEC EDGAR)
+
+# 🏠 wrapper ของ DaddyInvestor/.github/workflows/update-ipo-calendar.yml (มติ 08-29 — Actions ฟรีบน repo public)
+#   ตรรกะอยู่ใน script ฝั่ง DaddyInvestor · ไฟล์นี้เป็นเปลือก — แก้ logic ที่ scripts/discover_ipo_filings.py
+# ⚠️ log public — งานนี้แตะเฉพาะ SEC EDGAR สาธารณะ ห้ามเพิ่ม step ที่อ่าน/พิมพ์ข้อมูล user
+
+on:
+  workflow_dispatch:
+    inputs:
+      since_days:
+        description: 'ค้น filing ย้อนหลังกี่วัน — 7=ปกติ, 30=backfill ครั้งแรก'
+        required: false
+        default: '7'
+      no_ai:
+        description: 'ข้าม Claude (regex parse เท่านั้น) — true/false'
+        required: false
+        default: 'false'
+      dry_run:
+        description: 'ไม่เขียน DB (ทดสอบ) — true/false'
+        required: false
+        default: 'false'
+  schedule:
+    # 06:30 ไทย จ/พ/ศ — ต้องถอด cron ฝั่ง DaddyInvestor หลังตัวนี้รันผ่าน (กันรันคู่)
+    - cron: "30 23 * * 1,3,5"
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    if: vars.DADDY_BATCH_ON == '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout DaddyInvestor (private — PAT read-only)
+        uses: actions/checkout@v4
+        with:
+          repository: LopezDray/DaddyInvestor
+          token: ${{ secrets.DADDY_READ_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install psycopg2-binary
+
+      - name: Discover IPO filings from SEC EDGAR
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # กระดิ่ง IPO (notify_db ใช้ REST — คนละตัวกับ SUPABASE_DB_URL ของ psycopg2)
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          SINCE="${{ github.event.inputs.since_days || '7' }}"
+          FLAGS=""
+          if [ "${{ github.event.inputs.no_ai }}" = "true" ]; then FLAGS="$FLAGS --no-ai"; fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then FLAGS="$FLAGS --dry-run"; fi
+          echo "IPO discovery → since ${SINCE}d $FLAGS"
+          python scripts/discover_ipo_filings.py --since-days "$SINCE" $FLAGS

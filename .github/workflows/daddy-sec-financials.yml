@@ -1,0 +1,142 @@
+name: Daddy — Update SEC Financials
+
+# 🏠 wrapper ของ DaddyInvestor/.github/workflows/update-sec-financials.yml (มติ 08-29:
+#   repo นี้ public ⇒ Actions ฟรี · ตรรกะทั้งหมดอยู่ใน script ฝั่ง DaddyInvestor — ไฟล์นี้เป็นแค่เปลือก
+#   แก้ logic ให้แก้ที่ scripts/build_sec_financials.py ใน DaddyInvestor เท่านั้น)
+# ⚠️ log ของ repo public ใครก็อ่านได้ — งานนี้แตะเฉพาะข้อมูล SEC สาธารณะ ห้ามเพิ่ม step ที่อ่าน/พิมพ์ข้อมูล user
+# Setup (ครั้งเดียว): secrets DADDY_READ_TOKEN (fine-grained PAT อ่าน DaddyInvestor contents) +
+#   SUPABASE_URL + SUPABASE_SERVICE_KEY · repo variable DADDY_BATCH_ON=1 เพื่อเปิดใช้
+
+on:
+  workflow_dispatch:
+    inputs:
+      symbols:
+        description: "Symbols (space-separated). Empty = use target below"
+        required: false
+        default: ""
+      target:
+        description: "Default universe when symbols is empty"
+        required: false
+        default: "production-financials"
+        type: choice
+        options:
+          - production-financials
+          - fmp-cache
+          - nasdaq100
+          - pilot20
+      dry_run:
+        description: "Fetch and parse only; do not upsert"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+      print_rows:
+        description: "Print parsed rows as JSON (debug)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+      debug_facts:
+        description: "Print raw XBRL revenue/income facts for diagnosis (debug)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+      incremental_days:
+        description: "Incremental: only process symbols whose CIK filed in the last N days (0 = full run)"
+        required: false
+        default: "0"
+      compare_fmp:
+        description: "Compare SEC rows with existing FMP cache in Supabase"
+        required: false
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+  schedule:
+    - cron: "0 2 * * 0"  # Weekly Sunday 02:00 UTC — ต้องถอด cron ฝั่ง DaddyInvestor หลังตัวนี้รันผ่าน (กันรันคู่)
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false  # กันรันซ้อนขณะเขียน DB — คิวรอแทน
+
+jobs:
+  update:
+    # ปิดไว้ก่อนจนกว่า owner ตั้ง secrets ครบแล้วตั้ง variable นี้ = 1 (schedule ระหว่างนั้น = skip ฟรี ไม่แดง)
+    if: vars.DADDY_BATCH_ON == '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - name: Checkout DaddyInvestor (private — PAT read-only)
+        uses: actions/checkout@v4
+        with:
+          repository: LopezDray/DaddyInvestor
+          token: ${{ secrets.DADDY_READ_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: '.github/workflows/update-sec-financials.yml'
+
+      - name: Build SEC financials
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SEC_USER_AGENT: "DaddyInvestor contact@daddyinvestor.net"
+        run: |
+          ARGS=""
+          TARGET="${{ github.event.inputs.target || 'production-financials' }}"
+          EFFECTIVE_DRY_RUN="${{ github.event.inputs.dry_run || 'false' }}"
+          EFFECTIVE_COMPARE="${{ github.event.inputs.compare_fmp || 'true' }}"
+          if [ "$TARGET" = "pilot20" ]; then
+            EFFECTIVE_DRY_RUN="true"
+            EFFECTIVE_COMPARE="true"
+          fi
+          if [ "$EFFECTIVE_DRY_RUN" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          if [ "$EFFECTIVE_COMPARE" = "true" ]; then
+            ARGS="$ARGS --compare-fmp"
+          fi
+          if [ "${{ github.event.inputs.print_rows || 'false' }}" = "true" ]; then
+            ARGS="$ARGS --print-rows"
+          fi
+          if [ "${{ github.event.inputs.debug_facts || 'false' }}" = "true" ]; then
+            ARGS="$ARGS --debug-facts"
+          fi
+          ARGS="$ARGS --report-dir reports/sec-financials"
+          # schedule: FULL อาทิตย์แรกของเดือน · ที่เหลือ incremental 10 วัน (เหมือนต้นฉบับเป๊ะ)
+          INCR_DAYS="${{ github.event.inputs.incremental_days || '0' }}"
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            DOM=$(date -u +%d)
+            if [ "$((10#$DOM))" -le 7 ]; then INCR_DAYS=0; else INCR_DAYS=10; fi
+          fi
+          if [ "$INCR_DAYS" != "0" ]; then
+            ARGS="$ARGS --incremental-days $INCR_DAYS"
+          fi
+          SYMBOLS="${{ github.event.inputs.symbols || '' }}"
+          if [ -n "$SYMBOLS" ]; then
+            python scripts/build_sec_financials.py $ARGS $SYMBOLS
+          else
+            python scripts/build_sec_financials.py $ARGS --target "$TARGET"
+          fi
+
+      - name: Upload SEC compare report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sec-financials-compare-report
+          path: reports/sec-financials
+          if-no-files-found: ignore
