@@ -1,0 +1,76 @@
+name: Daddy — Update Insider Transactions (SEC Form 4)
+
+# 🏠 wrapper ของ DaddyInvestor/.github/workflows/update-insider-trades.yml (มติ 08-29 — Actions ฟรีบน repo public)
+#   ตรรกะอยู่ใน script ฝั่ง DaddyInvestor · แก้ logic ที่ scripts/discover_insider_trades.py
+# ⚠️ log public — งานนี้แตะเฉพาะ SEC Form 4 สาธารณะ ห้ามเพิ่ม step ที่อ่าน/พิมพ์ข้อมูล user
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "วันเดียว YYYY-MM-DD (เว้นว่าง = ใช้ days)"
+        required: false
+        default: ''
+      days:
+        description: "ย้อนหลัง N วัน (backfill) — เว้นว่างถ้าใช้ date"
+        required: false
+        default: ''
+      limit:
+        description: "จำกัด Form4/วัน (เทสต์ parser ให้เร็ว · เว้นว่าง = ทั้งหมด)"
+        required: false
+        default: ''
+      min_value:
+        description: "ตัดรายการมูลค่า < ค่านี้ USD (ลด noise)"
+        required: false
+        default: '10000'
+      dry_run:
+        description: "ไม่เขียน DB (ทดสอบ parser) — true/false"
+        required: false
+        default: 'true'
+  schedule:
+    # ทุกวัน 06:00 UTC ดึงย้อน 3 วัน (idempotent upsert) — ต้องถอด cron ฝั่ง DaddyInvestor หลังตัวนี้รันผ่าน
+    - cron: "0 6 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    if: vars.DADDY_BATCH_ON == '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout DaddyInvestor (private — PAT read-only)
+        uses: actions/checkout@v4
+        with:
+          repository: LopezDray/DaddyInvestor
+          token: ${{ secrets.DADDY_READ_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: '.github/workflows/update-insider-trades.yml'
+
+      - name: Install dependencies
+        run: pip install psycopg2-binary
+
+      - name: Discover Form 4 insider trades
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          DATE="${{ github.event.inputs.date }}"
+          DAYS="${{ github.event.inputs.days }}"
+          LIMIT="${{ github.event.inputs.limit }}"
+          MINV="${{ github.event.inputs.min_value || '10000' }}"
+          FLAGS=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then FLAGS="--dry-run"; fi
+          ARGS="--min-value ${MINV}"
+          if [ -n "$DATE" ]; then ARGS="$ARGS --date $DATE"; fi
+          if [ -n "$DAYS" ]; then ARGS="$ARGS --days $DAYS"; fi
+          if [ -z "$DATE" ] && [ -z "$DAYS" ]; then ARGS="$ARGS --days 3"; fi
+          if [ -n "$LIMIT" ]; then ARGS="$ARGS --limit $LIMIT"; fi
+          ARGS="$ARGS $FLAGS"
+          echo "Form 4 → $ARGS"
+          python scripts/discover_insider_trades.py $ARGS
