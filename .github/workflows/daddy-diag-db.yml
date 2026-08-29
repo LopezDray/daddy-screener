@@ -1,0 +1,89 @@
+name: Daddy — Diag DB connection (read-only)
+
+# 🔍 ตัวตรวจชั่วคราว: หาว่า SUPABASE_DB_URL ต่อไม่ติดเพราะอะไร
+#    รายงานเป็น "แบบไหนต่อติด" เท่านั้น — ไม่พิมพ์รหัส ไม่พิมพ์ความยาว ไม่พิมพ์ตัวอักษรใด ๆ ของรหัส
+#    (log ของ repo นี้เป็น public จึงต้องไม่หลุดอะไรเลย)
+#    ใช้เสร็จแล้วลบไฟล์นี้ทิ้ง
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install psycopg2
+        run: pip install --quiet psycopg2-binary
+
+      - name: ตรวจว่าต่อแบบไหนติด
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          python - <<'PY'
+          import os, socket, sys
+          import psycopg2, psycopg2.extensions as E
+
+          url = os.environ.get("SUPABASE_DB_URL", "")
+          if not url:
+              print("❌ ไม่มีค่า SUPABASE_DB_URL เลย"); sys.exit(1)
+
+          # ── รูปทรงของสตริง (ไม่แตะเนื้อรหัส) ──
+          print("── รูปทรง URL ──")
+          print("  ขึ้นต้น postgresql:// :", url.startswith("postgresql://"))
+          print("  จำนวน '@' :", url.count("@"), "(ต้องเป็น 1)")
+          print("  มี '[' หรือ ']' :", ("[" in url or "]" in url), "(ต้องเป็น False)")
+          print("  มีช่องว่าง/ขึ้นบรรทัด :", any(c.isspace() for c in url), "(ต้องเป็น False)")
+
+          try:
+              p = E.parse_dsn(url)
+          except Exception as e:
+              print("❌ parse_dsn พังเลย:", e); sys.exit(1)
+
+          pw = p.pop("password", "")
+          print("── ที่ parse ได้ (ตัดรหัสออก) ──")
+          for k in sorted(p):
+              print(f"  {k} = {p[k]}")
+          expect_user = "postgres.avsqywmguikvirltlugf"
+          print(f"  user ตรงกับที่ควรเป็น ({expect_user}) :", p.get("user") == expect_user)
+
+          # ── ลองต่อ 3 แบบ แล้วดูว่าแบบไหนติด ──
+          def try_conn(label, **kw):
+              try:
+                  c = psycopg2.connect(connect_timeout=15, password=kw.pop("password", pw), **kw)
+                  c.close()
+                  print(f"  ✅ {label} — ต่อติด")
+                  return True
+              except Exception as e:
+                  msg = str(e).strip().splitlines()[0] if str(e).strip() else repr(e)
+                  print(f"  ❌ {label} — {msg}")
+                  return False
+
+          base = {k: v for k, v in p.items()}
+          print("── ผลการต่อ ──")
+          a = try_conn("A. ใช้ hostname ตรง ๆ (ไม่แปลงเป็น IP)", **base)
+
+          ip_base = dict(base)
+          try:
+              ip_base["host"] = socket.getaddrinfo(base["host"], None, socket.AF_INET)[0][4][0]
+              b = try_conn("B. แปลง host เป็น IPv4 (แบบที่สคริปต์จริงทำ)", **ip_base)
+          except Exception as e:
+              print("  ⚠️ B. แปลง IP ไม่ได้:", e); b = False
+
+          c = try_conn("C. hostname + รหัสที่ตัดช่องว่างหัวท้าย (strip)",
+                       password=pw.strip(), **base)
+
+          print()
+          print("── สรุป ──")
+          if a: print("  รหัสถูกต้อง + hostname ใช้ได้ ⇒ ตัวปัญหาคือขั้นแปลง host เป็น IP ในสคริปต์")
+          elif c and not a: print("  รหัสมีช่องว่างหัว/ท้ายติดมา ⇒ แก้ที่ค่า secret")
+          elif not (a or b or c): print("  ต่อไม่ติดทุกแบบ ⇒ รหัสไม่ตรงกับที่ DB ถืออยู่ (ต้อง reset ใหม่)")
+          sys.exit(0 if (a or b or c) else 1)
+          PY
