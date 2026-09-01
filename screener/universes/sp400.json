@@ -1359,6 +1359,10 @@
    "sector": null
   },
   {
+   "symbol": "SUI",
+   "sector": null
+  },
+  {
    "symbol": "SWX",
    "sector": null
   },
@@ -1520,10 +1524,6 @@
   },
   {
    "symbol": "WAL",
-   "sector": null
-  },
-  {
-   "symbol": "WBS",
    "sector": null
   },
   {

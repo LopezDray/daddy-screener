@@ -67,6 +67,10 @@
    "sector": null
   },
   {
+   "symbol": "ADIG",
+   "sector": null
+  },
+  {
    "symbol": "ADMA",
    "sector": null
   },
@@ -823,6 +827,10 @@
    "sector": null
   },
   {
+   "symbol": "FIVN",
+   "sector": null
+  },
+  {
    "symbol": "FIZZ",
    "sector": null
   },
@@ -1020,10 +1028,6 @@
   },
   {
    "symbol": "HTO",
-   "sector": null
-  },
-  {
-   "symbol": "HTZ",
    "sector": null
   },
   {
@@ -2136,10 +2140,6 @@
   },
   {
    "symbol": "TRUP",
-   "sector": null
-  },
-  {
-   "symbol": "TWO",
    "sector": null
   },
   {

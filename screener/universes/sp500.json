@@ -215,10 +215,6 @@
    "sector": null
   },
   {
-   "symbol": "AVB",
-   "sector": null
-  },
-  {
    "symbol": "AVY",
    "sector": null
   },
@@ -671,10 +667,6 @@
    "sector": null
   },
   {
-   "symbol": "EA",
-   "sector": null
-  },
-  {
    "symbol": "ELV",
    "sector": null
   },
@@ -704,10 +696,6 @@
   },
   {
    "symbol": "EQIX",
-   "sector": null
-  },
-  {
-   "symbol": "EQR",
    "sector": null
   },
   {
@@ -784,6 +772,10 @@
   },
   {
    "symbol": "FDXF",
+   "sector": null
+  },
+  {
+   "symbol": "FERG",
    "sector": null
   },
   {
@@ -1555,6 +1547,10 @@
    "sector": null
   },
   {
+   "symbol": "RDDT",
+   "sector": null
+  },
+  {
    "symbol": "RTX",
    "sector": null
   },
@@ -1908,6 +1904,10 @@
   },
   {
    "symbol": "VST",
+   "sector": null
+  },
+  {
+   "symbol": "VMRK",
    "sector": null
   },
   {
