@@ -1,0 +1,76 @@
+# 🏠 wrapper ของสคริปต์ฝั่ง DaddyInvestor (มติ owner 08-29 — repo public ⇒ Actions ฟรี)
+#   ตรรกะทั้งหมดอยู่ที่ DaddyInvestor/scripts/mirror_candle_cache.py — ที่นี่เป็นเปลือกเรียกใช้
+#   แก้ logic = แก้ฝั่งโน้นที่เดียว · gate เดียวกับ daddy-flow-regime.yml (repo variable DADDY_BATCH_ON)
+# ⚠️ log ของ repo public ใครก็อ่านได้ — ห้ามเพิ่ม step ที่พิมพ์ข้อมูลรายบุคคลของ user
+
+name: Crypto EOD — เติม candle_cache หลังแท่งปิด (D5-sub-b)
+
+# GOAL:      แถว candle_cache ของเหรียญทุกตัวมี "แท่งปิดของเมื่อวาน (UTC)" ครบ ทุกวัน
+# ทำไมต้องมีงานแยก:
+#   crypto เทรด 24/7 (แท่งวัน D ปิด D+1 00:00Z) แต่ writer ของ candle_cache ทุกตัวเดิน
+#   ปฏิทิน **วันทำการหุ้น** และยังเขียน *ก่อน* เที่ยงคืน UTC:
+#     · DaddyInvestor/refresh-levels-postclose.yml  "5 0 * * 2-6"   (อ.-ส. · เฉพาะ symbol ใน watchlist)
+#     · watchlist-price-alert (CF cron)             "35 13-20 * * 2-6" (จ.-ศ.)
+#     · daddy-flow-regime.yml (ไฟล์ข้าง ๆ นี้)      "30 22 * * 1-5"  (จ.-ศ. · ก่อนแท่งปิด 1.5 ชม.)
+#   ⇒ snapshot ของเหรียญใช้ได้แค่ถึง "แท่งเมื่อวานของวันที่เขียน" และเสาร์-อาทิตย์ไม่มีใครเขียนเลย
+#   วัดจริง 2026-09-20 15:20Z: /levels?symbol=BTC-USD คืน ref = ราคาปิด 09-17 = **ช้า 2 แท่ง**
+# VERIFY:    log ต้องมี fetched>0 (ถ้า fetched=0 ทั้งที่ไม่ได้ skip = Yahoo ไม่ตอบ → job แดงเอง)
+# STOP WHEN: สำเร็จ 1 รอบ/วัน · fail = จบรอบนั้น ไม่ retry (รอ cron วันถัดไป)
+# ON STOP:   fail → job แดงใน Actions · ไม่ยิง Telegram (ฝั่ง worker มีตาข่ายรับอยู่แล้ว:
+#            /levels ตรวจเองว่า snapshot ขาดแท่งปิดไหม แล้วตกไป Yahoo สด ⇒ ข้อมูลไม่ค้างถึงผู้ใช้)
+#
+# 💵 ต้นทุน: Yahoo 2 call/เหรียญ (~5-10 เหรียญ ⇒ ~10-20 call/วัน · ฟรี) · Supabase เขียน ~46KB/เหรียญ
+#            ⇒ **~0.3 MB/วัน ≈ 9 MB/เดือน** จากเพดาน Pro 250GB = 0.004% (ไม่เข้าเกณฑ์กฎ 11)
+#            อ่าน Supabase = watchlist/portfolios อย่างละ 1 query (ไม่ใช่ per-stock) · Actions ~1 นาที/วัน
+
+on:
+  schedule:
+    # 00:35 UTC ทุกวัน = 07:35 ไทย
+    #   · **ต้องหลัง 00:00Z** ไม่งั้นแท่งของเมื่อวานยังไม่ปิด แล้วเขียน snapshot ที่ใช้ได้ถึงวันก่อนหน้า
+    #     (บั๊กเดียวกับ #67 ที่ทำให้ refresh-levels-postclose ย้ายจาก 21:00Z มา 00:05Z)
+    #   · เว้นจาก refresh-levels-postclose (00:05Z + deadline 660s ⇒ อาจลากถึง ~00:16Z) กันเขียนชนกัน
+    #   · GitHub cron หน่วงได้หลายสิบนาที — หน่วงแล้วยังอยู่ในวัน UTC เดียวกัน ⇒ ผลไม่เปลี่ยน
+    - cron: "35 0 * * *"
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: 'yes = เขียน Supabase จริง · no = dry-run (นับ call/egress เฉย ๆ)'
+        required: false
+        default: 'yes'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crypto-eod
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    if: vars.DADDY_BATCH_ON == '1'
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: LopezDray/DaddyInvestor
+          token: ${{ secrets.DADDY_READ_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # $0 ไม่แตะ net/DB — จับ regression ของ resolve/normalize/dry-run guard ก่อนยิงจริง
+      - name: 🧪 Self-test ($0)
+        run: python scripts/mirror_candle_cache.py --self-test
+
+      - name: 🪙 เติมแท่งปิดของเหรียญเข้า candle_cache
+        run: |
+          if [ "${{ github.event.inputs.apply }}" = "no" ]; then
+            python scripts/mirror_candle_cache.py --groups crypto
+          else
+            python scripts/mirror_candle_cache.py --groups crypto --apply --no-skip-fresh
+          fi
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
