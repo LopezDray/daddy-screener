@@ -37,12 +37,19 @@ def test_engine_self_test():
 
 def test_table_contract():
     print("\nสัญญากับ us-all-table.json:")
-    check(rs.TABLE_COLUMNS[-1] == "ew", "`ew` เป็นคอลัมน์สุดท้าย (คอลัมน์ใหม่ต่อท้ายเสมอ)")
+    # 09-20 (#40②): เดิมด่านนี้เขียนว่า "ew ต้องเป็นคอลัมน์สุดท้าย" — พอต่อ ds2/dr2/nd/dav ท้ายจริง
+    #   ตามกติกา append-only ด่านเลยแดงทั้งที่ทำถูก ⇒ เปลี่ยนไปตรึง **ตำแหน่ง** ของคอลัมน์เดิมแทน
+    #   (นั่นคือสัญญาที่ frontend พึ่งจริง — มันอ่านตาม index จาก header)
+    check(rs.TABLE_COLUMNS[11] == "ew", "`ew` ยังอยู่ index 11 เป๊ะ")
     check(rs.TABLE_COLUMNS.count("ew") == 1, "ไม่มี `ew` ซ้ำ")
     # คอลัมน์เดิมต้องไม่ขยับ — frontend เก่าอ่านตาม index
-    check(rs.TABLE_COLUMNS[:11] == ["sym", "close", "dv20m", "d_stage", "w_stage", "m_stage",
-                                    "w_conf", "score", "setup", "near", "rev"],
-          "11 คอลัมน์เดิมยังอยู่ตำแหน่งเดิมเป๊ะ")
+    # 🔴 ตรึง **prefix** ไม่ใช่ tail — ตรึง tail ("4 ตัวท้ายต้องเป็น ds2/dr2/nd/dav") คือกับดักเดิม
+    #    ที่ทำให้ด่านนี้แดงตอนมีคนต่อคอลัมน์ใหม่ท้าย ๆ ทั้งที่ทำถูกตามกติกา append-only
+    check(rs.TABLE_COLUMNS[:16] == ["sym", "close", "dv20m", "d_stage", "w_stage", "m_stage",
+                                    "w_conf", "score", "setup", "near", "rev", "ew",
+                                    "ds2", "dr2", "nd", "dav"],
+          "16 คอลัมน์ปัจจุบันยังอยู่ตำแหน่งเดิมเป๊ะ (frontend อ่านตาม index — ต่อท้ายได้ แทรกกลางไม่ได้)")
+    check(len(rs.TABLE_COLUMNS) == len(set(rs.TABLE_COLUMNS)), "ไม่มีชื่อคอลัมน์ซ้ำ")
 
     daily = _mk_daily()
     row = rs.build_table_row("AAPL", daily, rs.resample(daily, "1wk"),
@@ -50,7 +57,7 @@ def test_table_contract():
                              None, None, [])
     check(row is not None and len(row) == len(rs.TABLE_COLUMNS),
           f"แถวยาว {len(rs.TABLE_COLUMNS)} คอลัมน์")
-    check(row[-1] in VALID, f"ค่า ew อยู่ในชุดที่ยอมรับ (ได้ {row[-1]!r})")
+    check(row[11] in VALID, f"ค่า ew อยู่ในชุดที่ยอมรับ (ได้ {row[11]!r})")
 
 
 def test_row_carries_real_count():
@@ -63,7 +70,7 @@ def test_row_carries_real_count():
     check(code == "4u", f"engine อ่านซีรีส์นี้ได้ 4u (ได้ {code!r})")
     row = rs.build_table_row("TEST", daily, rs.resample(daily, "1wk"),
                              rs.resample(daily, "1mo"), None, None, None, [])
-    check(row is not None and row[-1] == "4u", "build_table_row คาย ew='4u' ในคอลัมน์สุดท้าย")
+    check(row is not None and row[11] == "4u", "build_table_row คาย ew='4u' ที่ index 11")
 
 
 def test_complete_five_waves_stays_silent():
