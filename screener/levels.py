@@ -16,7 +16,7 @@ AVWAP-5y = ของใหม่ (ไม่มีในระบบเดิม)
 stdlib ล้วน — ตาม ethos ของ repo (ไม่มี dependency)
 """
 
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 # ── ระยะ emit: เก็บเฉพาะหุ้นที่ปิดห่างจากแนวใดแนวหนึ่ง ≤ นี้ (%) → "อยู่ในแนวพิจารณา" ──
 NEAR_EMIT_BAND = 8.0
@@ -91,7 +91,60 @@ def _pick_two(cands, last, kind):
     return side[:2]
 
 
-def compute_dynamic_levels(daily_candles, lookback=LOOKBACK):
+# ── S5 (09-20) · กฎ "แท่งท้ายถือว่าปิดแล้วเมื่อไร" — 4 ports ต้องเท่ากันทุกตัวอักษร ──────────
+#   สำเนา: app.js + scripts/daddy-asset-worker.js (isBarClosed) · scripts/check_watchlist_alerts.py
+#   · daddy-screener/screener/levels.py — เคสร่วม tests/fixtures/forming_cut_cases.json
+#   (tests/test_alerts.py TestFormingCut ↔ tests/forming_cut_parity.mjs · screener: tests/test_forming_cut.py)
+#   class จาก canonical Yahoo symbol: -USD → crypto (24/7 · แท่งวัน UTC ปิด 00:00Z วันถัดไป)
+#   · .BK → th (SET ปิด 16:30 ICT → นับปิด 09:40Z) · ไม่มี "." และ "=" → us (NYSE ปิด 16:00 ET
+#   → นับปิด 16:10 ET · DST คิดเองตามกฎสหรัฐ 2007+ ไม่พึ่ง zoneinfo — Windows ไม่มี tz database)
+#   · อื่น ๆ (.L .T GC=F …) → other = กฎเดิม "ปิดแล้วเมื่อวันที่แท่ง < วันนี้ (UTC)"
+#   as_of = เวลาที่ "ดึงแท่งมา" (fetched_at ของ snapshot) ไม่ใช่เวลาที่อ่าน — แท่งครึ่งวันที่ดึงมาแล้วไม่โตเอง
+def market_class_of(symbol):
+    s = str(symbol or "").upper()
+    if not s:
+        return "other"
+    if s.endswith("-USD"):
+        return "crypto"
+    if s.endswith(".BK"):
+        return "th"
+    if "." in s or "=" in s:
+        return "other"
+    return "us"
+
+
+def bar_close_utc(cls, bar_date):
+    """datetime (UTC) ที่แท่งวัน bar_date (YYYY-MM-DD) ถือว่าปิดแล้ว · None = class other (ไม่รู้เวลาปิด)"""
+    y, m, d = (int(x) for x in str(bar_date).split("-"))
+    day0 = datetime(y, m, d, tzinfo=timezone.utc)
+    if cls == "crypto":
+        return day0 + timedelta(days=1)
+    if cls == "th":
+        return day0 + timedelta(hours=9, minutes=40)
+    if cls == "us":
+        # EDT = [อาทิตย์ที่ 2 ของ มี.ค., อาทิตย์แรกของ พ.ย.) → 16:10 ET = 20:10Z (EDT) / 21:10Z (EST)
+        def nth_sun(mon, n):
+            js_day = (datetime(y, mon, 1).weekday() + 1) % 7      # mirror JS getUTCDay(): Sun=0
+            return 1 + ((7 - js_day) % 7) + 7 * (n - 1)
+        md = m * 100 + d
+        edt = 300 + nth_sun(3, 2) <= md < 1100 + nth_sun(11, 1)
+        return day0 + timedelta(hours=20 if edt else 21, minutes=10)
+    return None
+
+
+def is_bar_closed(symbol, bar_date, as_of):
+    """แท่งวัน bar_date ของ symbol ปิดแล้วหรือยัง ณ เวลา as_of (aware datetime หรือ ISO string) — pure"""
+    if isinstance(as_of, str):
+        as_of = datetime.fromisoformat(as_of.replace("Z", "+00:00"))
+    if as_of.tzinfo is None:
+        as_of = as_of.replace(tzinfo=timezone.utc)
+    close = bar_close_utc(market_class_of(symbol), bar_date)
+    if close is None:
+        return str(bar_date) < as_of.astimezone(timezone.utc).date().isoformat()
+    return as_of >= close
+
+
+def compute_dynamic_levels(daily_candles, lookback=LOOKBACK, symbol=None, as_of=None):
     """
     Faithful port ของ compute_dynamic_levels() ใน DaddyInvestor → S1/S2/R1/R2 == เลขหน้าเว็บ
     daily_candles = list ของ {open,high,low,close,volume,time="YYYY-MM-DD"}
@@ -100,15 +153,19 @@ def compute_dynamic_levels(daily_candles, lookback=LOOKBACK):
     daily = [c for c in (daily_candles or []) if c and c.get("close") is not None and c.get("time")]
     if len(daily) < 30:
         return None, None, None, None, None
-    # กันแท่ง "วันนี้" ที่ยังไม่ปิด (forming) — แอปก็ใช้เฉพาะแท่งที่ปิดแล้ว
-    today = datetime.now(timezone.utc).date()
-    if len(daily) > 1 and date.fromisoformat(daily[-1]["time"]) >= today:
+    # กันแท่ง "วันนี้" ที่ยังไม่ปิด (forming) — S5 (09-20): ตัดสินด้วยเวลาปิดตลาดของ symbol ณ as_of
+    #   (ไม่ส่ง = ตอนนี้ · run_scan ดึงสด ⇒ ตอนนี้ = เวลาดึง) · ไม่ส่ง symbol = กฎเดิม (>= today UTC)
+    #   ⚠️ 4 ports ต้องเท่ากัน — ดู is_bar_closed + tests/test_forming_cut.py (เคสร่วมกับ DaddyInvestor)
+    if len(daily) > 1 and not is_bar_closed(symbol, daily[-1]["time"], as_of or datetime.now(timezone.utc)):
         daily = daily[:-1]
     if len(daily) < 30:
         return None, None, None, None, None
 
     scoped = daily[-lookback:]
-    weekly = _app_weekly(daily)
+    # #22 (D6 ทาง ก · 2026-09-20): weekly ต้องมาจากหน้าต่าง 252 แท่งเดียวกับ ①②③
+    #   (app.js analyze: toWeeklyCandles(levelScope) · worker/alert: weekly จาก daily 1y)
+    #   เดิมใช้ daily ทั้ง 5 ปี → EMA200W มีค่า → เป็น S1/S2 ได้ทั้งที่หน้าเว็บ/push ไม่มีแนวนี้
+    weekly = _app_weekly(scoped)
     wcloses = [c["close"] for c in weekly]
     wma50 = _sma(wcloses, 50)
     wema200 = _ema(wcloses, 200)
@@ -198,7 +255,7 @@ def build_levels_row(symbol, daily, sector=None, w_stage=None, setup=None,
       - candle ไม่พอ / ราคาอ้างอิงไม่ได้
       - ปิดห่างจากทุกแนวเกิน NEAR_EMIT_BAND (= ไม่อยู่ในแนวพิจารณา)
     """
-    s1, s2, r1, r2, ref_close = compute_dynamic_levels(daily)
+    s1, s2, r1, r2, ref_close = compute_dynamic_levels(daily, symbol=symbol)
     if ref_close is None:
         return None
     avwap = compute_avwap_5y(daily)

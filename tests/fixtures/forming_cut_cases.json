@@ -1,0 +1,395 @@
+{
+ "_note": "S5 (2026-09-20) · กฎ 'แท่งท้ายถือว่าปิดแล้วเมื่อไร' — เคสร่วม 4 ports: app.js isBarClosed · worker isBarClosed · check_watchlist_alerts.is_bar_closed · daddy-screener levels.is_bar_closed (สำเนาไฟล์นี้ใน repo นั้น) · cases = ตารางกฎ (เขียนมือจากสเปค: US ปิด 16:10 ET DST-aware · .BK 09:40Z · crypto 00:00Z วันถัดไป · other = date < today UTC) · levels = ผลของกฎเมื่อไหลผ่าน compute จริง (golden จาก Python เท่านั้น)",
+ "_regen": "python scripts/gen_forming_cut_golden.py   (เขียน levels.golden_* ใหม่จาก check_watchlist_alerts.compute_dynamic_levels — Python ③ = source of truth ของ push · ห้ามพิมพ์เลขมือ)",
+ "cases": [
+  {
+   "name": "US ระหว่างเทรด 11:00 ET",
+   "symbol": "NVDA",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T15:00:00Z",
+   "expect": false
+  },
+  {
+   "name": "US 16:09:59 ET (EDT) ยังไม่ครบ buffer",
+   "symbol": "NVDA",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T20:09:59Z",
+   "expect": false
+  },
+  {
+   "name": "US 16:10 ET (EDT) → ปิด — เดิม ②③ ตัดทิ้งจน 00:00Z (#37 ฝั่ง US)",
+   "symbol": "NVDA",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T20:10:00Z",
+   "expect": true
+  },
+  {
+   "name": "cron refresh 21:00Z ฤดูร้อน → ใช้แท่งวันนี้ (#67)",
+   "symbol": "NVDA",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T21:00:00Z",
+   "expect": true
+  },
+  {
+   "name": "แท่งศุกร์ ดูวันเสาร์ → ปิดแน่นอน",
+   "symbol": "NVDA",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-19T12:00:00Z",
+   "expect": true
+  },
+  {
+   "name": "แท่งเมื่อวาน ระหว่างเทรดวันนี้ → ปิดแล้ว",
+   "symbol": "NVDA",
+   "bar_date": "2026-09-17",
+   "as_of": "2026-09-18T15:00:00Z",
+   "expect": true
+  },
+  {
+   "name": "EST 15:30 ET — กฎ EDT-only (20:10Z ตลอดปี) จะผิด",
+   "symbol": "NVDA",
+   "bar_date": "2026-12-15",
+   "as_of": "2026-12-15T20:30:00Z",
+   "expect": false
+  },
+  {
+   "name": "EST 16:09:59 ET",
+   "symbol": "NVDA",
+   "bar_date": "2026-12-15",
+   "as_of": "2026-12-15T21:09:59Z",
+   "expect": false
+  },
+  {
+   "name": "EST 16:10 ET → ปิด",
+   "symbol": "NVDA",
+   "bar_date": "2026-12-15",
+   "as_of": "2026-12-15T21:10:00Z",
+   "expect": true
+  },
+  {
+   "name": "ศุกร์ก่อน DST เริ่ม (อา. 8 มี.ค. 2026) ยัง EST → 20:30Z ยังไม่ปิด",
+   "symbol": "NVDA",
+   "bar_date": "2026-03-06",
+   "as_of": "2026-03-06T20:30:00Z",
+   "expect": false
+  },
+  {
+   "name": "จันทร์หลัง DST เริ่ม → EDT 20:10Z ปิด",
+   "symbol": "NVDA",
+   "bar_date": "2026-03-09",
+   "as_of": "2026-03-09T20:10:00Z",
+   "expect": true
+  },
+  {
+   "name": "ศุกร์ก่อน DST จบ (อา. 1 พ.ย. 2026) ยัง EDT → 20:10Z ปิด",
+   "symbol": "NVDA",
+   "bar_date": "2026-10-30",
+   "as_of": "2026-10-30T20:10:00Z",
+   "expect": true
+  },
+  {
+   "name": "จันทร์หลัง DST จบ → EST 20:30Z ยังไม่ปิด",
+   "symbol": "NVDA",
+   "bar_date": "2026-11-02",
+   "as_of": "2026-11-02T20:30:00Z",
+   "expect": false
+  },
+  {
+   "name": "จันทร์หลัง DST จบ → EST 21:10Z ปิด",
+   "symbol": "NVDA",
+   "bar_date": "2026-11-02",
+   "as_of": "2026-11-02T21:10:00Z",
+   "expect": true
+  },
+  {
+   "name": "2027: ศุกร์ก่อน DST เริ่ม (14 มี.ค.) EST 20:30Z ยังไม่ปิด",
+   "symbol": "NVDA",
+   "bar_date": "2027-03-12",
+   "as_of": "2027-03-12T20:30:00Z",
+   "expect": false
+  },
+  {
+   "name": "2027: จันทร์หลัง DST เริ่ม EDT 20:10Z ปิด",
+   "symbol": "NVDA",
+   "bar_date": "2027-03-15",
+   "as_of": "2027-03-15T20:10:00Z",
+   "expect": true
+  },
+  {
+   "name": "2027: ศุกร์ก่อน DST จบ (7 พ.ย.) EDT 20:10Z ปิด",
+   "symbol": "NVDA",
+   "bar_date": "2027-11-05",
+   "as_of": "2027-11-05T20:10:00Z",
+   "expect": true
+  },
+  {
+   "name": "2027: จันทร์หลัง DST จบ EST 20:30Z ยังไม่ปิด",
+   "symbol": "NVDA",
+   "bar_date": "2027-11-08",
+   "as_of": "2027-11-08T20:30:00Z",
+   "expect": false
+  },
+  {
+   "name": "แท่งวันที่อนาคต (นาฬิกาเพี้ยน) → ไม่ปิด",
+   "symbol": "NVDA",
+   "bar_date": "2026-09-21",
+   "as_of": "2026-09-18T20:00:00Z",
+   "expect": false
+  },
+  {
+   "name": "ดัชนี US (^GSPC) = class us",
+   "symbol": "^GSPC",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T20:10:00Z",
+   "expect": true
+  },
+  {
+   "name": "hyphen class share (BRK-B) ≠ crypto",
+   "symbol": "BRK-B",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T19:00:00Z",
+   "expect": false
+  },
+  {
+   "name": "ตัวพิมพ์เล็ก nvda",
+   "symbol": "nvda",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T20:10:00Z",
+   "expect": true
+  },
+  {
+   "name": "TH 12:00 ICT ตลาดเปิด → ยังไม่ปิด (R5e เดิมปล่อยผ่าน)",
+   "symbol": "PTT.BK",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T05:00:00Z",
+   "expect": false
+  },
+  {
+   "name": "TH 16:39:59 ICT",
+   "symbol": "PTT.BK",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T09:39:59Z",
+   "expect": false
+  },
+  {
+   "name": "TH 16:40 ICT → ปิด",
+   "symbol": "PTT.BK",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T09:40:00Z",
+   "expect": true
+  },
+  {
+   "name": "TH 19:00 ICT (#37 window — เดิม ②③ ตัดทิ้งจน 07:00 ICT)",
+   "symbol": "PTT.BK",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T12:00:00Z",
+   "expect": true
+  },
+  {
+   "name": "TH 06:30 ICT วันถัดไป (23:30Z)",
+   "symbol": "PTT.BK",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T23:30:00Z",
+   "expect": true
+  },
+  {
+   "name": "TH แท่งเมื่อวาน ระหว่างเทรดวันนี้",
+   "symbol": "PTT.BK",
+   "bar_date": "2026-09-17",
+   "as_of": "2026-09-18T05:00:00Z",
+   "expect": true
+  },
+  {
+   "name": "ดัชนี SET (^SET.BK) = class th",
+   "symbol": "^SET.BK",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T10:00:00Z",
+   "expect": true
+  },
+  {
+   "name": "ตัวพิมพ์เล็ก ptt.bk",
+   "symbol": "ptt.bk",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T09:40:00Z",
+   "expect": true
+  },
+  {
+   "name": "crypto snapshot 21:00Z = แท่งครึ่งวัน → ไม่ปิด (#8 — as_of = fetched_at ไม่ใช่ read-time)",
+   "symbol": "BTC-USD",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T21:00:00Z",
+   "expect": false
+  },
+  {
+   "name": "crypto 23:59:59Z",
+   "symbol": "BTC-USD",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T23:59:59Z",
+   "expect": false
+  },
+  {
+   "name": "crypto 00:00Z วันถัดไป → ปิด",
+   "symbol": "BTC-USD",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-19T00:00:00Z",
+   "expect": true
+  },
+  {
+   "name": "crypto 02:00Z วันถัดไป",
+   "symbol": "BTC-USD",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-19T02:00:00Z",
+   "expect": true
+  },
+  {
+   "name": "crypto แท่งเสาร์ ดูอาทิตย์ 00:00Z → ปิด (ไม่มีวันหยุด)",
+   "symbol": "BTC-USD",
+   "bar_date": "2026-09-19",
+   "as_of": "2026-09-20T00:00:00Z",
+   "expect": true
+  },
+  {
+   "name": "crypto 00:30Z แท่งวันนี้ — เดิม ① (ปฏิทิน NY) ปล่อยผ่าน",
+   "symbol": "ETH-USD",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T00:30:00Z",
+   "expect": false
+  },
+  {
+   "name": "ทอง GC=F = other → กฎเดิม: วันเดียวกัน = ยังไม่ปิด",
+   "symbol": "GC=F",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T23:00:00Z",
+   "expect": false
+  },
+  {
+   "name": "ทอง GC=F 00:00Z วันถัดไป → ปิด",
+   "symbol": "GC=F",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-19T00:00:00Z",
+   "expect": true
+  },
+  {
+   "name": "ต่างประเทศ (.L) = other → กฎเดิม",
+   "symbol": "VOD.L",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T17:00:00Z",
+   "expect": false
+  },
+  {
+   "name": "ต่างประเทศ (.L) แท่งเมื่อวาน",
+   "symbol": "VOD.L",
+   "bar_date": "2026-09-17",
+   "as_of": "2026-09-18T17:00:00Z",
+   "expect": true
+  },
+  {
+   "name": "ไม่ส่ง symbol = กฎเดิม (ผู้เรียกเก่า computeLevels(daily))",
+   "symbol": null,
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-18T23:00:00Z",
+   "expect": false
+  },
+  {
+   "name": "ไม่ส่ง symbol 00:00Z วันถัดไป → ปิด",
+   "symbol": null,
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-19T00:00:00Z",
+   "expect": true
+  },
+  {
+   "name": "symbol ว่าง = other",
+   "symbol": "",
+   "bar_date": "2026-09-18",
+   "as_of": "2026-09-19T00:00:00Z",
+   "expect": true
+  }
+ ],
+ "levels": {
+  "fixture": "tests/fixtures/rklb_candles.json daily_candles (250 แท่งปิด · แท่งท้าย 2026-06-18 13:30Z close 107.24)",
+  "forming_bar": {
+   "open": 108.0,
+   "high": 125.0,
+   "low": 106.0,
+   "close": 120.0
+  },
+  "golden_closed": {
+   "s1": 104.1821,
+   "s2": 99.61,
+   "r1": 122.0758,
+   "r2": 138.38,
+   "ref": 107.24
+  },
+  "golden_with_bar": {
+   "s1": 115.23,
+   "s2": 104.1821,
+   "r1": 122.0758,
+   "r2": 138.38,
+   "ref": 120.0
+  },
+  "cases": [
+   {
+    "name": "US ระหว่างเทรด → ตัดแท่งท้าย = golden แท่งปิด",
+    "symbol": "RKLB",
+    "bar_ts": "2026-06-22T13:30:00Z",
+    "as_of": "2026-06-22T15:00:00Z",
+    "expect": "closed"
+   },
+   {
+    "name": "US 16:10 ET → รวมแท่งท้าย",
+    "symbol": "RKLB",
+    "bar_ts": "2026-06-22T13:30:00Z",
+    "as_of": "2026-06-22T20:10:00Z",
+    "expect": "with_bar"
+   },
+   {
+    "name": "US refresh 21:00Z (EDT) → รวมแท่งท้าย (#67)",
+    "symbol": "RKLB",
+    "bar_ts": "2026-06-22T13:30:00Z",
+    "as_of": "2026-06-22T21:00:00Z",
+    "expect": "with_bar"
+   },
+   {
+    "name": "TH 12:00 ICT → ตัด",
+    "symbol": "RKLB.BK",
+    "bar_ts": "2026-06-22T03:00:00Z",
+    "as_of": "2026-06-22T05:00:00Z",
+    "expect": "closed"
+   },
+   {
+    "name": "TH 19:00 ICT → รวม (#37)",
+    "symbol": "RKLB.BK",
+    "bar_ts": "2026-06-22T03:00:00Z",
+    "as_of": "2026-06-22T12:00:00Z",
+    "expect": "with_bar"
+   },
+   {
+    "name": "crypto snapshot 21:00Z → ตัด (#8)",
+    "symbol": "BTC-USD",
+    "bar_ts": "2026-06-22T00:00:00Z",
+    "as_of": "2026-06-22T21:00:00Z",
+    "expect": "closed"
+   },
+   {
+    "name": "crypto 00:00Z วันถัดไป → รวม",
+    "symbol": "BTC-USD",
+    "bar_ts": "2026-06-22T00:00:00Z",
+    "as_of": "2026-06-23T00:00:00Z",
+    "expect": "with_bar"
+   },
+   {
+    "name": "ไม่ส่ง symbol (กฎเดิม) 23:00Z → ตัด",
+    "symbol": null,
+    "bar_ts": "2026-06-22T13:30:00Z",
+    "as_of": "2026-06-22T23:00:00Z",
+    "expect": "closed"
+   },
+   {
+    "name": "ไม่ส่ง symbol (กฎเดิม) 00:00Z วันถัดไป → รวม",
+    "symbol": null,
+    "bar_ts": "2026-06-22T13:30:00Z",
+    "as_of": "2026-06-23T00:00:00Z",
+    "expect": "with_bar"
+   }
+  ]
+ }
+}
