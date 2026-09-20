@@ -97,7 +97,13 @@ jobs:
             if [ -f "$l" ]; then cp "$l" "docs/$u-levels.json"; fi
           done
           # ทั้งตลาด: รวม 8 shard → us-all.json + -reversals + -levels + -table (skip ถ้า shard ไม่ครบ)
-          python scripts/merge_shards.py --universe us-all --shards 8 --artifacts _artifacts
+          #   #75 (09-20): SKIP = คงไฟล์เดิมไว้ = กระดานค้างวันเก่า **แบบเงียบสนิท**
+          #   (run เขียว · commit "no changes" · ผู้ใช้เห็นแค่วันเดิมตัวจาง) ⇒ ต้องจับแล้วส่งเสียง
+          python scripts/merge_shards.py --universe us-all --shards 8 --artifacts _artifacts | tee /tmp/merge.log
+          if grep -q "SKIP us-all" /tmp/merge.log; then
+            echo "us_all_skipped=1" >> "$GITHUB_ENV"
+            echo "::warning::merge us-all ถูก SKIP (shard ไม่ครบ) — กระดานจะค้างของวันเดิม"
+          fi
           python scripts/build_index.py
       - name: Commit & push
         run: |
@@ -119,3 +125,26 @@ jobs:
             echo "::error::push ไม่สำเร็จหลัง retry 3 ครั้ง"
             exit 1
           fi
+
+      # 🔔 #75 (09-20): เดิมรอบสแกนพังแล้ว "เงียบทั้งสองฝั่ง" — ฝั่งเว็บเพิ่งติดป้าย ⚠️ scan เก่า >4 วัน
+      #   ไปแล้ว (stage-engine.js SA_UNI_STALE_DAYS) แต่นั่นคือให้ **ผู้ใช้** เป็นคนเจอก่อนโอบ
+      #   ⇒ ฝั่งนี้ต้องส่งเสียงทันทีที่รอบพัง/ถูก SKIP ไม่ใช่รอ 4 วัน
+      #   ไม่มี secret (fork/PR) = ข้ามเงียบ ไม่ทำให้ job แดงเพิ่ม
+      - name: 🔔 แจ้ง Telegram เมื่อรอบสแกนพังหรือถูกข้าม
+        if: always() && (failure() || env.us_all_skipped == '1')
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "${TELEGRAM_BOT_TOKEN:-}" ] || [ -z "${TELEGRAM_CHAT_ID:-}" ]; then
+            echo "ไม่มี secret Telegram — ข้าม"; exit 0
+          fi
+          if [ "${us_all_skipped:-}" = "1" ]; then
+            MSG="⚠️ daddy-screener: merge us-all ถูก SKIP (shard ไม่ครบ)%0Aกระดาน Universe จะค้างของวันเดิม — ผู้ใช้เห็นวันเก่าโดยไม่มี error%0A${RUN_URL}"
+          else
+            MSG="🔴 daddy-screener: รอบสแกนพัง%0AUniverse จะไม่มีข้อมูลใหม่คืนนี้%0A${RUN_URL}"
+          fi
+          curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${MSG}" >/dev/null || echo "ส่ง Telegram ไม่สำเร็จ (ไม่ทำให้ job แดง)"
