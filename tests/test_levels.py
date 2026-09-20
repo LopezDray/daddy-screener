@@ -108,6 +108,46 @@ def test_build_row_schema_and_band():
     print(f"✓ test_build_row_schema_and_band ({emitted}/40 emitted)")
 
 
+def gen_daily_5y(seed, n=1300, start_price=50.0):
+    """แท่งสังเคราะห์ ~5 ปี เฉพาะวันทำการ (จ-ศ) → weekly ≥ 200 สัปดาห์ = branch EMA200W มีค่าจริง"""
+    random.seed(seed)
+    d = date(2019, 1, 1)
+    price = start_price
+    out = []
+    while len(out) < n:
+        d += timedelta(days=1)
+        if d.isoweekday() > 5:
+            continue
+        price *= (1 + random.uniform(-0.03, 0.032))
+        price = max(2.0, price)
+        o = price * (1 + random.uniform(-0.01, 0.01))
+        hi = max(o, price) * (1 + random.uniform(0, 0.02))
+        lo = min(o, price) * (1 - random.uniform(0, 0.02))
+        out.append({
+            "time": d.isoformat(),
+            "open": round(o, 4), "high": round(hi, 4), "low": round(lo, 4),
+            "close": round(price, 4), "volume": round(random.uniform(1e6, 5e6)),
+        })
+    return out
+
+
+def test_levels_independent_of_history_beyond_lookback():
+    """🔔 alert-contract (#22): run_scan ป้อน daily 5 ปี แต่ S1/S2/R1/R2 ต้องเท่ากับคิดจาก 252 แท่งท้าย
+    (= app.js analyze / worker /levels / check_watchlist_alerts ที่เห็นแค่ 1 ปี) — ต่างเมื่อไหร่ =
+    Universe อ้างแนวที่หน้าเว็บ/push ไม่มี (SBUX 2026-09-17: s1 94.9776 (EMA200W) vs 95.45)"""
+    from screener.levels import _app_weekly, _ema
+    checked = 0
+    for seed in range(1, 41):
+        daily = gen_daily_5y(seed)
+        assert len(_app_weekly(daily)) >= 200, "fixture ต้องยาวพอให้ EMA200W มีค่าบน 5 ปี"
+        full = compute_dynamic_levels(daily)
+        short = compute_dynamic_levels(daily[-252:])
+        assert full == short, f"seed {seed}: 5y {full} != 252 แท่ง {short} (weekly รั่วจากนอกหน้าต่าง)"
+        checked += 1
+    assert checked == 40
+    print("✓ test_levels_independent_of_history_beyond_lookback")
+
+
 def test_insufficient_candles():
     assert compute_dynamic_levels(gen_daily(1, n=10)) == (None, None, None, None, None)
     assert build_levels_row("X", gen_daily(1, n=10)) is None
@@ -118,5 +158,6 @@ if __name__ == "__main__":
     test_levels_ordering()
     test_avwap()
     test_build_row_schema_and_band()
+    test_levels_independent_of_history_beyond_lookback()
     test_insufficient_candles()
     print("ALL PASS")
