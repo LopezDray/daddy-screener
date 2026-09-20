@@ -148,6 +148,37 @@ def test_levels_independent_of_history_beyond_lookback():
     print("✓ test_levels_independent_of_history_beyond_lookback")
 
 
+def test_weekly_window_is_calendar_year_not_252_bars():
+    """🔔 alert-contract (#22 รอบ 2 · 2026-09-20): weekly ต้องมาจาก **365 วันปฏิทิน**
+    ไม่ใช่ 252 *แท่ง* — ②③ ได้ daily = candle_cache range=1y ทั้งก้อน:
+      หุ้น ~252 แถว/52 สัปดาห์ · crypto 365 แถว/53 สัปดาห์ ⇒ MA50W มีค่า **ทั้งคู่**
+    ถ้าตัดด้วย daily[-252:] แท่ง crypto (7 แท่ง/สัปดาห์) จะเหลือ 36 สัปดาห์ → MA50W หาย
+    = Universe อ้างแนวคนละชุดกับหน้าเว็บ/push (เจอตอนเทียบ golden BTC-USD ฝั่ง DaddyInvestor)"""
+    from screener.levels import _app_weekly, _one_year, _sma
+    # crypto = ทุกวันมีแท่ง (ไม่มีวันหยุด) 3 ปี
+    start = date(2023, 1, 2)
+    daily = []
+    for i in range(3 * 365):
+        d = start.fromordinal(start.toordinal() + i)
+        px = 100 + (i % 37) * 0.5
+        daily.append({"time": d.isoformat(), "open": px, "high": px + 1,
+                      "low": px - 1, "close": px, "volume": 1000})
+    win = _one_year(daily)
+    assert len(win) == 365, f"หน้าต่าง 1 ปีปฏิทินต้องได้ 365 แท่ง (crypto) — ได้ {len(win)}"
+    wk = _app_weekly(win)
+    assert len(wk) >= 50, f"crypto 1 ปี ต้องได้ >= 50 สัปดาห์ (ได้ {len(wk)}) — MA50W ต้องมีค่า"
+    assert _sma([c["close"] for c in wk], 50) is not None, "MA50W ต้องมีค่าเท่า ②③"
+    # ถ้าใครเผลอกลับไปตัด 252 แท่ง → พังตรงนี้
+    assert len(_app_weekly(daily[-252:])) < 50, "fixture ต้องแยกสองทางได้จริง"
+    # หุ้น (5 แท่ง/สัปดาห์) — สองวิธีต้องให้ MA50W เท่ากัน (ไม่มี regression ฝั่งหุ้น)
+    stock = [c for i, c in enumerate(daily)
+             if date.fromisoformat(c["time"]).isoweekday() <= 5]
+    a = _sma([c["close"] for c in _app_weekly(_one_year(stock))], 50)
+    b = _sma([c["close"] for c in _app_weekly(stock[-252:])], 50)
+    assert a is not None and b is not None and abs(a - b) < 1e-9, f"หุ้น MA50W ต้องเท่ากัน: {a} vs {b}"
+    print("✓ test_weekly_window_is_calendar_year_not_252_bars")
+
+
 def test_insufficient_candles():
     assert compute_dynamic_levels(gen_daily(1, n=10)) == (None, None, None, None, None)
     assert build_levels_row("X", gen_daily(1, n=10)) is None
@@ -159,5 +190,6 @@ if __name__ == "__main__":
     test_avwap()
     test_build_row_schema_and_band()
     test_levels_independent_of_history_beyond_lookback()
+    test_weekly_window_is_calendar_year_not_252_bars()
     test_insufficient_candles()
     print("ALL PASS")
