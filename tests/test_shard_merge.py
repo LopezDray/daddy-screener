@@ -94,6 +94,35 @@ def _write_bundle(d, k, results, table):
 US_FILES = ["us-all.json", "us-all-reversals.json", "us-all-levels.json", "us-all-table.json"]
 
 
+# 🚨 เหตุจริง 2026-09-20: เทสนี้ลบ docs/us-all*.json **ที่ git track อยู่** ทุกครั้งที่รัน
+#   คอมเมนต์เดิมเขียนว่า "repo ไม่มี us-all ใน docs อยู่แล้ว" — จริงตอนเขียน แต่ไม่จริงตั้งแต่
+#   us-all เริ่มถูก commit (09-11) ⇒ ใครรันเทสชุดนี้แล้ว `git add -A` = ลบข้อมูลจริงขึ้น main
+#   เกิดแล้ว 1 ครั้ง: PR #5 ทำ /app โหมด Universe ยิง us-all-table.json = 404 (กู้ที่ #7 · ด่านที่ #8)
+#   ⇒ snapshot ก่อนลบ · คืนใน finally เสมอ · เทสยังได้ "เริ่มจากว่าง" เหมือนเดิมทุกประการ
+_DOCS_BACKUP = {}
+
+
+def _snapshot_docs():
+    """จำเนื้อไฟล์จริงไว้ (ถ้ามี) ก่อนเทสไปยุ่งกับ docs/"""
+    _DOCS_BACKUP.clear()
+    for fn in US_FILES:
+        p = os.path.join(rs.DOCS_DIR, fn)
+        if os.path.exists(p):
+            with open(p, "rb") as fh:
+                _DOCS_BACKUP[fn] = fh.read()
+
+
+def _restore_docs():
+    """คืนไฟล์จริงให้เป๊ะ · ไฟล์ที่เทสสร้างเองและไม่มีใน snapshot = ลบทิ้ง"""
+    for fn in US_FILES:
+        p = os.path.join(rs.DOCS_DIR, fn)
+        if fn in _DOCS_BACKUP:
+            with open(p, "wb") as fh:
+                fh.write(_DOCS_BACKUP[fn])
+        elif os.path.exists(p):
+            os.remove(p)
+
+
 def _clean_docs():
     for fn in US_FILES:
         p = os.path.join(rs.DOCS_DIR, fn)
@@ -112,7 +141,8 @@ def _run_merge(artifacts, shards):
 def test_merge():
     print("merge_shards (guard + full merge):")
     docs_us = os.path.join(rs.DOCS_DIR, "us-all.json")
-    _clean_docs()   # เริ่มสะอาด (repo ไม่มี us-all ใน docs อยู่แล้ว)
+    _snapshot_docs()                 # 🚨 จำของจริงไว้ก่อน (ดูคอมเมนต์ที่ _clean_docs)
+    _clean_docs()                    # เทสต้องการ "เริ่มจากว่าง"
     try:
         with tempfile.TemporaryDirectory() as tmp:
             art = os.path.join(tmp, "_artifacts")
@@ -141,7 +171,7 @@ def test_merge():
             s0 = next(x for x in data["results"] if x["symbol"] == "S0")
             check(s0["score"] == 80, "dedupe เก็บ score สูงสุด (80 จาก shard0 ไม่ใช่ 50)")
     finally:
-        _clean_docs()   # ล้าง test artifact ไม่ให้ค้าง repo
+        _restore_docs()              # ล้าง test artifact + คืนของจริงเสมอ
 
 
 def main():
@@ -149,6 +179,16 @@ def main():
     test_shard_slicing()
     test_build_table_row()
     test_merge()
+    # 🚨 ด่านปิดท้าย: เทสนี้ห้ามทิ้งรอยไว้ใน docs/ ที่ git track
+    #    (ถ้าแดง = กลไก snapshot/restore พัง ⇒ อย่า commit จนกว่าจะแก้)
+    import subprocess
+    try:
+        dirty = subprocess.run(["git", "status", "--porcelain", "--", "docs/"],
+                               cwd=os.path.dirname(rs.DOCS_DIR), capture_output=True,
+                               text=True, timeout=20).stdout.strip()
+        check(not dirty, f"เทสไม่ทิ้งรอยใน docs/ (git status สะอาด) — เจอ: {dirty[:120] or '(สะอาด)'}")
+    except Exception as e:                                   # ไม่มี git/timeout = ข้าม ไม่ทำเทสแดงลวง
+        print(f"  ⏭️  ข้ามด่าน git status ({e})")
     print(f"\n{'ALL PASS ✅' if _fail == 0 else f'{_fail} FAIL ❌'}")
     sys.exit(1 if _fail else 0)
 
