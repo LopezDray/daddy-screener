@@ -168,6 +168,13 @@ def build_table_row(symbol, daily, weekly, monthly, wa, row, rev_lv, rev):
     คอลัมน์ (ดู COLUMNS): [sym, close, dv20m, d_stage, w_stage, m_stage, w_conf, score, setup, near, rev, ew]
 
     `ew` = "กำลังเดินคลื่น" Elliott ณ วันสแกน ("3u"/"4u"/"3d"/"4d"/None) — CPU ล้วน 0 fetch เพิ่ม
+
+    `ds2` `dr2` `nd` `dav` (#40② · 2026-09-20) = ระยะห่างแบบ signed % ถึงแนวรับ2 / แนวต้าน2 /
+    แนวที่ใกล้สุด / AVWAP-5y — **คัดลอกค่าดิบจาก rev_lv ที่ build_levels_row คำนวณไว้แล้ว**
+    🔴 ห้ามคำนวณใหม่ตรงนี้เด็ดขาด (S/R = alert contract 4 ports ต้องได้เลขชุดเดียวกัน)
+    ทำไม: เดิมเว็บต้องโหลด docs/us-all-levels.json ทั้งไฟล์ (1.5MB · 245KB gz) ทุกครั้งที่เปิด /app
+    เพื่ออ่าน 4 ตัวเลขของหุ้นตัวเดียว · ย้ายมาต่อท้ายตารางแล้ว = ไฟล์ levels ยังเขียนเหมือนเดิม
+    (push alert / งานอื่นยังใช้ได้) แต่ฝั่งเว็บเลิกดึง
     ⚠️ คอลัมน์ใหม่ **ต่อท้ายเสมอ** — frontend อ่านตาม index คงที่ ถ้าแทรกกลางของเดิมจะเลื่อนหมด"""
     if len(daily) < 20:
         return None
@@ -195,12 +202,19 @@ def build_table_row(symbol, daily, weekly, monthly, wa, row, rev_lv, rev):
         ew = wave_code(daily, "1d")
     except Exception:  # noqa: BLE001
         ew = None
+    # #40② — ระยะถึงแนว: คัดลอกจาก rev_lv ตรง ๆ (แถวเดียวกับที่เขียนลง -levels.json)
+    dist = (rev_lv or {}).get("dist") or {}
+    ds2 = dist.get("s2")
+    dr2 = dist.get("r2")
+    dav = dist.get("avwap5y")
+    nd = rev_lv["nearest"]["dist_pct"] if rev_lv else None       # ระยะถึงแนวที่ใกล้สุด (คู่กับ `near`)
     return [symbol, round(close, 2), dv20m, d_stage, w_stage, m_stage, w_conf,
-            score, setup, near, rev_flag, ew]
+            score, setup, near, rev_flag, ew, ds2, dr2, nd, dav]
 
 
 TABLE_COLUMNS = ["sym", "close", "dv20m", "d_stage", "w_stage", "m_stage",
-                 "w_conf", "score", "setup", "near", "rev", "ew"]
+                 "w_conf", "score", "setup", "near", "rev", "ew",
+                 "ds2", "dr2", "nd", "dav"]
 
 
 def write_output(universe, results, scanned):
