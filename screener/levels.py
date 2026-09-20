@@ -144,6 +144,15 @@ def is_bar_closed(symbol, bar_date, as_of):
     return as_of >= close
 
 
+def _one_year(daily):
+    """แท่ง 365 วันปฏิทินท้ายสุด = ก้อนเดียวกับที่ ②③ ได้จาก candle_cache range=1y
+    (หุ้น ~252 แถว · crypto 365 แถว) — ใช้เป็นฐานของ weekly เท่านั้น ไม่แตะ scoped"""
+    if not daily:
+        return daily
+    cut = date.fromisoformat(daily[-1]["time"]).toordinal() - 364
+    return [c for c in daily if date.fromisoformat(c["time"]).toordinal() >= cut]
+
+
 def compute_dynamic_levels(daily_candles, lookback=LOOKBACK, symbol=None, as_of=None):
     """
     Faithful port ของ compute_dynamic_levels() ใน DaddyInvestor → S1/S2/R1/R2 == เลขหน้าเว็บ
@@ -162,10 +171,15 @@ def compute_dynamic_levels(daily_candles, lookback=LOOKBACK, symbol=None, as_of=
         return None, None, None, None, None
 
     scoped = daily[-lookback:]
-    # #22 (D6 ทาง ก · 2026-09-20): weekly ต้องมาจากหน้าต่าง 252 แท่งเดียวกับ ①②③
-    #   (app.js analyze: toWeeklyCandles(levelScope) · worker/alert: weekly จาก daily 1y)
+    # #22 (D6 ทาง ก · 2026-09-20 · แก้ 09-20 รอบ 2): weekly ต้องมาจาก **หน้าต่างแท่งชุดเดียวกับ ②③**
+    #   ②③ ได้ daily = candle_cache range=1y แล้วทำ weekly จากทั้งก้อน (ไม่ตัดอีก):
+    #   หุ้น ~252 แถว = 52 สัปดาห์ · crypto 365 แถว = 53 สัปดาห์ ⇒ MA50W มีค่าทั้งคู่
+    #   ที่นี่ run_scan ป้อน 5 ปี ⇒ ต้องตัดเป็น "1 ปีปฏิทิน" ก่อน แล้วค่อย weekly
+    #   ⚠️ ห้ามใช้ daily[-252:] (รอบแรกพลาดตรงนี้): 252 *แท่ง* ของ crypto = 252 วันปฏิทิน
+    #      = 36 สัปดาห์ → MA50W หาย ทั้งที่ ②③ มี ⇒ Universe อ้างแนวคนละชุดกับเว็บ/push
+    #      (จับได้ที่ DaddyInvestor tests/screener/test_levels_parity.py เคส BTC-USD golden)
     #   เดิมใช้ daily ทั้ง 5 ปี → EMA200W มีค่า → เป็น S1/S2 ได้ทั้งที่หน้าเว็บ/push ไม่มีแนวนี้
-    weekly = _app_weekly(scoped)
+    weekly = _app_weekly(_one_year(daily))
     wcloses = [c["close"] for c in weekly]
     wma50 = _sma(wcloses, 50)
     wema200 = _ema(wcloses, 200)
