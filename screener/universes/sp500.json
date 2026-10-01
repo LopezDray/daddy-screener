@@ -271,6 +271,10 @@
    "sector": null
   },
   {
+   "symbol": "BE",
+   "sector": null
+  },
+  {
    "symbol": "BNY",
    "sector": null
   },
@@ -304,10 +308,6 @@
   },
   {
    "symbol": "BF-B",
-   "sector": null
-  },
-  {
-   "symbol": "BLDR",
    "sector": null
   },
   {
@@ -719,6 +719,10 @@
    "sector": null
   },
   {
+   "symbol": "P",
+   "sector": null
+  },
+  {
    "symbol": "ES",
    "sector": null
   },
@@ -988,6 +992,10 @@
   },
   {
    "symbol": "ITW",
+   "sector": null
+  },
+  {
+   "symbol": "ILMN",
    "sector": null
   },
   {
@@ -1268,10 +1276,6 @@
   },
   {
    "symbol": "MRNA",
-   "sector": null
-  },
-  {
-   "symbol": "TAP",
    "sector": null
   },
   {
@@ -1776,10 +1780,6 @@
   },
   {
    "symbol": "TKO",
-   "sector": null
-  },
-  {
-   "symbol": "TTD",
    "sector": null
   },
   {
