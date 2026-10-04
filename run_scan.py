@@ -25,6 +25,7 @@ from screener.patterns import detect_reversals
 from screener.stage import analyze_stage, MA_PERIOD
 from screener.levels import build_levels_row
 from screener.elliott import wave_code
+from screener.indicators import rsi_wilder
 
 # เรดาร์กลับตัว (W3-11 P3) — จัดกลุ่ม pattern เป็น "ก่อยอด" / "ก่อฐาน"
 REVERSAL_GROUP = {
@@ -165,7 +166,8 @@ def _pace(throttle):
 def build_table_row(symbol, daily, weekly, monthly, wa, row, rev_lv, rev):
     """แถว quant compact (array) สำหรับ master table us-all — ทุกตัวที่ candle พอ + floor กันเศษ
     floor: dv20 ≥ $1M และ close ≥ $1 (กัน penny/ไม่มีสภาพคล่องจริง) · คืน None ถ้าตก floor
-    คอลัมน์ (ดู COLUMNS): [sym, close, dv20m, d_stage, w_stage, m_stage, w_conf, score, setup, near, rev, ew]
+    คอลัมน์ (ดู TABLE_COLUMNS): [sym, close, dv20m, d_stage, w_stage, m_stage, w_conf, score, setup, near, rev, ew,
+                                ds2, dr2, nd, dav, s1, r1, rsi]
 
     `ew` = "กำลังเดินคลื่น" Elliott ณ วันสแกน ("3u"/"4u"/"3d"/"4d"/None) — CPU ล้วน 0 fetch เพิ่ม
 
@@ -175,7 +177,14 @@ def build_table_row(symbol, daily, weekly, monthly, wa, row, rev_lv, rev):
     ทำไม: เดิมเว็บต้องโหลด docs/us-all-levels.json ทั้งไฟล์ (1.5MB · 245KB gz) ทุกครั้งที่เปิด /app
     เพื่ออ่าน 4 ตัวเลขของหุ้นตัวเดียว · ย้ายมาต่อท้ายตารางแล้ว = ไฟล์ levels ยังเขียนเหมือนเดิม
     (push alert / งานอื่นยังใช้ได้) แต่ฝั่งเว็บเลิกดึง
-    ⚠️ คอลัมน์ใหม่ **ต่อท้ายเสมอ** — frontend อ่านตาม index คงที่ ถ้าแทรกกลางของเดิมจะเลื่อนหมด"""
+    ⚠️ คอลัมน์ใหม่ **ต่อท้ายเสมอ** — frontend อ่านตาม index คงที่ ถ้าแทรกกลางของเดิมจะเลื่อนหมด
+
+    `s1` `r1` `rsi` (Universe v2 · 2026-10-04) — ตาราง Universe แบบใหม่โชว์ "ราคา · แนวรับ · แนวต้าน · RSI"
+    ต่อแถว (แบบหน้ารายการโปรด) + ชิป RSI ต่ำกว่า 30 / สูงกว่า 80
+    · `s1` `r1` = ราคาแนวรับ 1 / แนวต้าน 1 **คัดลอกจาก rev_lv ตรง ๆ** (เหตุผลเดียวกับ ds2/dr2 ข้างบน —
+      alert contract) · rev_lv = None (แนวใกล้สุดไกลเกิน NEAR_EMIT_BAND) ⇒ None ทั้งคู่ เว็บโชว์ "—"
+    · `rsi` = RSI 14 วัน (Wilder) จาก daily close ชุดเดียวกับที่ scan ใช้ · ปัด 1 ตำแหน่ง
+      สูตรเดียวกับ app.js rsi() เป๊ะ (screener/indicators.py · ล็อกด้วย tests/test_rsi.py)"""
     if len(daily) < 20:
         return None
     close = daily[-1]["close"]
@@ -208,13 +217,22 @@ def build_table_row(symbol, daily, weekly, monthly, wa, row, rev_lv, rev):
     dr2 = dist.get("r2")
     dav = dist.get("avwap5y")
     nd = rev_lv["nearest"]["dist_pct"] if rev_lv else None       # ระยะถึงแนวที่ใกล้สุด (คู่กับ `near`)
+    # Universe v2 — ราคาแนว (คัดลอก ไม่คำนวณใหม่) + RSI รายวัน · ตัวเดียวพังห้ามล้มทั้งแถว
+    s1 = rev_lv.get("s1") if rev_lv else None
+    r1 = rev_lv.get("r1") if rev_lv else None
+    try:
+        rv = rsi_wilder([c["close"] for c in daily])
+        rsi = round(rv, 1) if rv is not None else None
+    except Exception:  # noqa: BLE001
+        rsi = None
     return [symbol, round(close, 2), dv20m, d_stage, w_stage, m_stage, w_conf,
-            score, setup, near, rev_flag, ew, ds2, dr2, nd, dav]
+            score, setup, near, rev_flag, ew, ds2, dr2, nd, dav, s1, r1, rsi]
 
 
 TABLE_COLUMNS = ["sym", "close", "dv20m", "d_stage", "w_stage", "m_stage",
                  "w_conf", "score", "setup", "near", "rev", "ew",
-                 "ds2", "dr2", "nd", "dav"]
+                 "ds2", "dr2", "nd", "dav",
+                 "s1", "r1", "rsi"]                 # Universe v2 (2026-10-04) — ต่อท้ายเท่านั้น
 
 
 def write_output(universe, results, scanned):
