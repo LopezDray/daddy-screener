@@ -20,6 +20,8 @@ sys.path.insert(0, ROOT)
 import run_scan as rs                                    # noqa: E402
 from screener import elliott as ew                       # noqa: E402
 
+EW_IDX = rs.TABLE_COLUMNS.index("ew")   # = 11 (ตำแหน่งล็อกไว้ใน test_table_contract)
+
 VALID = {None, "3u", "4u", "3d", "4d"}
 _fails = []
 
@@ -89,7 +91,9 @@ def test_complete_five_waves_stays_silent():
     check(ew.wave_code(daily, "1d") is None, "wave_code เงียบ (None)")
     row = rs.build_table_row("DONE5", daily, rs.resample(daily, "1wk"),
                              rs.resample(daily, "1mo"), None, None, None, [])
-    check(row is not None and row[-1] is None, "แถว table คาย ew=None ไม่ใช่ '4u'")
+    # ⚠️ อ่านตามชื่อคอลัมน์ ไม่ใช่ row[-1] — `ew` ไม่ใช่คอลัมน์สุดท้ายมาตั้งแต่ #40② (ds2/dr2/nd/dav)
+    #    เดิมผ่านได้เพราะ dav = None บังเอิญ · พอมี rsi ต่อท้าย (2026-10-04) row[-1] มีค่าจริง ⇒ เทสอ่านผิดคอลัมน์
+    check(row is not None and row[EW_IDX] is None, "แถว table คาย ew=None ไม่ใช่ '4u'")
 
 
 def test_bad_input_never_kills_row():
@@ -104,7 +108,7 @@ def test_bad_input_never_kills_row():
     finally:
         rs.wave_code = orig
     check(row is not None and row[0] == "BOOM", "engine โยน exception → ยังได้แถว")
-    check(row is not None and row[-1] is None, "ew = None (ไม่ใช่ค่าขยะ)")
+    check(row is not None and row[EW_IDX] is None, "ew = None (ไม่ใช่ค่าขยะ)")
 
 
 def _day(i):
