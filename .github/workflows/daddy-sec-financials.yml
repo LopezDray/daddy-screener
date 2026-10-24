@@ -60,6 +60,14 @@ on:
         options:
           - "true"
           - "false"
+      shards:
+        description: "Split into N parallel jobs by crc32(symbol) (--shard i/N) · schedule always uses 4"
+        required: false
+        default: "1"
+        type: choice
+        options:
+          - "1"
+          - "4"
   schedule:
     - cron: "0 2 * * 0"  # Weekly Sunday 02:00 UTC — ต้องถอด cron ฝั่ง DaddyInvestor หลังตัวนี้รันผ่าน (กันรันคู่)
 
@@ -76,6 +84,13 @@ jobs:
     if: vars.DADDY_BATCH_ON == '1'
     runs-on: ubuntu-latest
     timeout-minutes: 100
+    # ✂️ 10-24: full run 1,452 ตัวใช้ 82 นาที (4 ต.ค.) · target 2,151 → ~3,400 ⇒ job เดียวเกิน 100 นาที
+    #   schedule = 4 job ขนานเสมอ (crc32(symbol) % 4 · build_sec_financials.py --shard ฝั่ง DaddyInvestor)
+    #   fail-fast ปิด: ชิ้นหนึ่งพังต้องไม่ยกเลิกชิ้นที่เหลือกลางคันขณะเขียน DB · Telegram แจ้งรายชิ้น
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON((github.event_name == 'schedule' || github.event.inputs.shards == '4') && '[0,1,2,3]' || '[0]') }}
     steps:
       - name: Checkout DaddyInvestor (private — PAT read-only)
         uses: actions/checkout@v4
@@ -124,6 +139,10 @@ jobs:
           if [ "$INCR_DAYS" != "0" ]; then
             ARGS="$ARGS --incremental-days $INCR_DAYS"
           fi
+          SHARDS="${{ (github.event_name == 'schedule' || github.event.inputs.shards == '4') && '4' || '1' }}"
+          if [ "$SHARDS" != "1" ]; then
+            ARGS="$ARGS --shard ${{ matrix.shard }}/$SHARDS"
+          fi
           SYMBOLS="${{ github.event.inputs.symbols || '' }}"
           if [ -n "$SYMBOLS" ]; then
             python scripts/build_sec_financials.py $ARGS $SYMBOLS
@@ -135,7 +154,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sec-financials-compare-report
+          name: sec-financials-compare-report-${{ matrix.shard }}
           path: reports/sec-financials
           if-no-files-found: ignore
 
@@ -150,5 +169,5 @@ jobs:
           if [ -z "$TG_TOKEN" ]; then echo "ไม่มี TELEGRAM_BOT_TOKEN — ข้าม"; exit 0; fi
           curl -sS -m 15 "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
             -d chat_id="${TG_CHAT}" \
-            -d text="🔴 daddy-screener: ${{ github.workflow }} พัง — ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            -d text="🔴 daddy-screener: ${{ github.workflow }} shard ${{ matrix.shard }} พัง — ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             >/dev/null || true
