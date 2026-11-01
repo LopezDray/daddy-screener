@@ -515,10 +515,6 @@
    "sector": null
   },
   {
-   "symbol": "CTVA",
-   "sector": null
-  },
-  {
    "symbol": "CSGP",
    "sector": null
   },
@@ -1435,10 +1431,6 @@
    "sector": null
   },
   {
-   "symbol": "PSKY",
-   "sector": null
-  },
-  {
    "symbol": "PH",
    "sector": null
   },
@@ -1511,11 +1503,11 @@
    "sector": null
   },
   {
-   "symbol": "PEG",
+   "symbol": "PTC",
    "sector": null
   },
   {
-   "symbol": "PTC",
+   "symbol": "PEG",
    "sector": null
   },
   {
@@ -1527,7 +1519,7 @@
    "sector": null
   },
   {
-   "symbol": "PWR",
+   "symbol": "Q",
    "sector": null
   },
   {
@@ -1535,11 +1527,11 @@
    "sector": null
   },
   {
-   "symbol": "DGX",
+   "symbol": "PWR",
    "sector": null
   },
   {
-   "symbol": "Q",
+   "symbol": "DGX",
    "sector": null
   },
   {
@@ -1552,10 +1544,6 @@
   },
   {
    "symbol": "RDDT",
-   "sector": null
-  },
-  {
-   "symbol": "RTX",
    "sector": null
   },
   {
@@ -1611,6 +1599,10 @@
    "sector": null
   },
   {
+   "symbol": "RTX",
+   "sector": null
+  },
+  {
    "symbol": "SPGI",
    "sector": null
   },
@@ -1648,6 +1640,10 @@
   },
   {
    "symbol": "SPG",
+   "sector": null
+  },
+  {
+   "symbol": "SKYD",
    "sector": null
   },
   {
@@ -1807,6 +1803,10 @@
    "sector": null
   },
   {
+   "symbol": "TWLO",
+   "sector": null
+  },
+  {
    "symbol": "TYL",
    "sector": null
   },
@@ -1915,6 +1915,10 @@
    "sector": null
   },
   {
+   "symbol": "VYLR",
+   "sector": null
+  },
+  {
    "symbol": "WRB",
    "sector": null
   },
@@ -1932,10 +1936,6 @@
   },
   {
    "symbol": "DIS",
-   "sector": null
-  },
-  {
-   "symbol": "WBD",
    "sector": null
   },
   {

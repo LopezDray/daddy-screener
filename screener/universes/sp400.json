@@ -383,6 +383,10 @@
    "sector": null
   },
   {
+   "symbol": "CTVA",
+   "sector": null
+  },
+  {
    "symbol": "CUBE",
    "sector": null
   },
@@ -596,6 +600,10 @@
   },
   {
    "symbol": "FNF",
+   "sector": null
+  },
+  {
+   "symbol": "FORM",
    "sector": null
   },
   {
@@ -1039,10 +1047,6 @@
    "sector": null
   },
   {
-   "symbol": "OLN",
-   "sector": null
-  },
-  {
    "symbol": "ONB",
    "sector": null
   },
@@ -1428,10 +1432,6 @@
   },
   {
    "symbol": "TTMI",
-   "sector": null
-  },
-  {
-   "symbol": "TWLO",
    "sector": null
   },
   {
