@@ -13,6 +13,8 @@ import urllib.request
 import urllib.parse
 from datetime import datetime, timedelta, timezone, date as dateobj
 
+from .levels import is_bar_closed
+
 _YAHOO_HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; daddy-screener/1.0)"}
 _HOSTS = ["query1.finance.yahoo.com", "query2.finance.yahoo.com"]
 
@@ -44,8 +46,27 @@ def _retry_after(e, fallback):
     return fallback
 
 
-def fetch_daily(symbol, rng="5y", retries=3):
-    """ดึงแท่งเทียนรายวัน (พร้อม volume) จาก Yahoo v8 chart — คืน list เรียงตามเวลา"""
+def drop_forming_bar(symbol, daily, as_of=None):
+    """#7C (11-01) · ตัดแท่งท้ายที่ "ยังไม่ปิด" ออกตั้งแต่ชั้นดึง — กฎ is_bar_closed ตัวเดียวกับ levels.py
+
+    ทำไม: เดิมกฎนี้อยู่ใน levels.compute_dynamic_levels อย่างเดียว ⇒ แนวรับ-ต้านคิดจากแท่งปิดแล้ว
+      แต่ stage / score / RSI / Elliott / close ในตาราง Universe ใช้แท่งที่ยังวิ่ง = คนละชุดในแถวเดียวกัน
+      (รอบ cron 22:00Z ไม่โดนเพราะตลาดปิดแล้ว แต่กดรันมือกลางวันโดนทันที) · ดัชนีเทียบ RS (SPY/QQQ/IJH/IJR)
+      ก็ผ่าน fetch_daily ⇒ ตัดพร้อมหุ้นด้วยกฎเดียวกัน (class us) ไม่เกิดความเหลื่อมวัน
+    daily = [{time: "YYYY-MM-DD", ...}] เรียงตามเวลา · as_of = เวลาที่ดึง (ไม่ส่ง = ตอนนี้)
+    เงื่อนไข len > 1 = เท่ากับ compute_dynamic_levels (ตัวตัดในนั้นยังอยู่ — กลายเป็นยามซ้ำ)
+    ⚠️ 4 ports: DaddyInvestor check_watchlist_alerts.drop_forming_bar · worker dropFormingBar
+       — ด่านข้าม repo DaddyInvestor/tests/screener/test_levels_parity.py §E · ที่นี่ tests/test_forming_cut.py"""
+    if not daily or len(daily) < 2:
+        return daily
+    if is_bar_closed(symbol, daily[-1]["time"], as_of or datetime.now(timezone.utc)):
+        return daily
+    return daily[:-1]
+
+
+def fetch_daily(symbol, rng="5y", retries=3, as_of=None):
+    """ดึงแท่งเทียนรายวัน (พร้อม volume) จาก Yahoo v8 chart — คืน list เรียงตามเวลา
+    #7C: คืนเฉพาะแท่งที่ปิดแล้ว ณ เวลาที่ดึง (drop_forming_bar) ⇒ ทุกคอลัมน์ของ scan เห็นแท่งชุดเดียวกัน"""
     global _consecutive_429
     encoded = urllib.parse.quote(symbol)
     last_err = None
@@ -62,7 +83,7 @@ def fetch_daily(symbol, rng="5y", retries=3):
                 candles = _parse_result(result)
                 if candles:
                     _consecutive_429 = 0            # สำเร็จ → reset congestion
-                    return candles
+                    return drop_forming_bar(symbol, candles, as_of)
             except urllib.error.HTTPError as e:
                 last_err = f"{host} HTTP {e.code}"
                 if e.code == 429:  # rate limited → honor Retry-After แล้วลอง host อื่น
