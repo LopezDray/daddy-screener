@@ -76,11 +76,11 @@ def load_universe(name):
     return out
 
 
-def fetch_index_weekly(universe):
+def fetch_index_weekly(universe, as_of=None):
     idx = INDEX_FOR.get(universe)
     if not idx:
         return []
-    daily = fetch_daily(idx, rng="5y")
+    daily = fetch_daily(idx, rng="5y", as_of=as_of)
     return resample(daily, "1wk") if daily else []
 
 
@@ -95,7 +95,10 @@ def scan(universe, limit=None, throttle=0.25, shard=None):
     tag = f"{universe}" + (f" shard{shard[0]}/{shard[1]}" if shard is not None else "")
     print(f"[scan] {tag} — {total} symbols — {datetime.now(timezone.utc).isoformat()}")
 
-    index_weekly = fetch_index_weekly(universe)
+    # #7C (11-01): เวลาตัดสิน "แท่งปิดแล้ว" ตัวเดียวทั้งรอบ — ดัชนี RS กับหุ้นทุกตัวตัดด้วย as_of เดียวกัน
+    #   (กดรันมือคาบ 16:10 ET: ไม่งั้นดัชนีที่ดึงตอนต้นรอบกับหุ้นท้ายรอบจะจบคนละวัน)
+    scan_as_of = datetime.now(timezone.utc)
+    index_weekly = fetch_index_weekly(universe, as_of=scan_as_of)
     if not index_weekly:
         print(f"[scan] WARN: no index candles for {universe} (RS จะเป็น null)")
 
@@ -108,7 +111,7 @@ def scan(universe, limit=None, throttle=0.25, shard=None):
         symbol = item["symbol"]
         print(f"[scan] {i+1}/{total} {symbol}", end=" ", flush=True)
         try:
-            daily = fetch_daily(symbol, rng="5y")
+            daily = fetch_daily(symbol, rng="5y", as_of=scan_as_of)
             if len(daily) < MIN_CANDLES["1d"]:
                 print(f"→ skip ({len(daily)} daily)")
                 time.sleep(_pace(throttle))
