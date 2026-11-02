@@ -10,6 +10,7 @@
 """
 
 import argparse
+from collections import Counter
 import glob
 import json
 import os
@@ -18,7 +19,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from run_scan import (  # noqa: E402
-    write_output, write_reversals, write_levels, write_table,
+    write_output, write_reversals, write_levels, write_table, scan_as_of_date,
 )
 
 
@@ -69,7 +70,9 @@ def main():
         return 0
 
     results, reversals, levels, table, scanned = [], [], [], [], 0
+    bar_dates = Counter()           # #7B: นับรวมทุก shard (shard ไหนเป็น bundle รุ่นเก่าไม่มีฟิลด์นี้ = ไม่นับ)
     for d in by_shard.values():
+        bar_dates.update(d.get("bar_dates") or {})
         results.extend(d.get("results", []))
         reversals.extend(d.get("reversals", []))
         levels.extend(d.get("levels", []))
@@ -81,10 +84,12 @@ def main():
     results.sort(key=lambda r: r["score"], reverse=True)   # write_output ไม่ sort เอง (scan sort ก่อนเรียก)
 
     # reuse writer เดิม (stats + schema เหมือน 4 universe เป๊ะ · reversals/levels/table sort ในตัว)
-    write_output(uni, results, scanned)
-    write_reversals(uni, reversals, scanned)
-    write_levels(uni, levels, scanned)
-    write_table(uni, table, scanned)
+    as_of = scan_as_of_date(bar_dates)
+    write_output(uni, results, scanned, as_of=as_of)
+    write_reversals(uni, reversals, scanned, as_of=as_of)
+    write_levels(uni, levels, scanned, as_of=as_of)
+    write_table(uni, table, scanned, as_of=as_of)
+    print(f"[merge] as_of (วันราคาปิดของรอบนี้) = {as_of}")
     print(f"[merge] DONE {uni}: {got} shards → {scanned} scanned · "
           f"{len(results)} setups / {len(reversals)} rev / {len(levels)} levels / {len(table)} table")
     return 0

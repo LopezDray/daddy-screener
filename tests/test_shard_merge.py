@@ -83,10 +83,12 @@ def test_build_table_row():
           "dv20<$1M → ตัด (None)")
 
 
-def _write_bundle(d, k, results, table):
+def _write_bundle(d, k, results, table, bar_dates=None):
     payload = {"universe": "us-all", "shard": k, "scanned": 10,
                "generated_at": "2026-07-24T00:00:00Z",
                "results": results, "reversals": [], "levels": [], "table": table}
+    if bar_dates is not None:                 # #7B · bundle รุ่นเก่าไม่มีฟิลด์นี้ — ต้องรวมได้ทั้งสองแบบ
+        payload["bar_dates"] = bar_dates
     with open(os.path.join(d, f"art{k}", "us-all-shard%d.json" % k), "w") as f:
         json.dump(payload, f)
 
@@ -156,10 +158,12 @@ def test_merge():
                   "ขาด shard (3/4) → SKIP ไม่เขียน us-all.json")
 
             # เพิ่ม shard ที่ 4 → ครบ → เขียน 4 ไฟล์
+            #   #7B: shard 3 ส่ง bar_dates (ตัวที่ค้าง 1 ตัวต้องไม่ลากวันของทั้งกระดาน) · shard 0-2 = bundle รุ่นเก่า
             os.makedirs(os.path.join(art, "art3"))
             _write_bundle(art, 3, [{"symbol": "S3", "score": 90, "grade": "A"},
                                    {"symbol": "S0", "score": 50, "grade": "B"}],  # S0 ซ้ำ score ต่ำ
-                          [["S3", 20.0, 9.0, 2, 2, 2, 88, 90, "B", "r1", "T"]])
+                          [["S3", 20.0, 9.0, 2, 2, 2, 88, 90, "B", "r1", "T"]],
+                          bar_dates={"2026-10-30": 9, "2026-10-21": 1})
             _run_merge(art, 4)
             check(os.path.exists(docs_us), "ครบ 4 shard → เขียน us-all.json")
             for suffix in US_FILES[1:]:
@@ -170,12 +174,53 @@ def test_merge():
             check(data["results"][0]["score"] >= data["results"][-1]["score"], "sort score desc")
             s0 = next(x for x in data["results"] if x["symbol"] == "S0")
             check(s0["score"] == 80, "dedupe เก็บ score สูงสุด (80 จาก shard0 ไม่ใช่ 50)")
+            for fn in US_FILES:
+                st = json.load(open(os.path.join(rs.DOCS_DIR, fn)))["stats"]
+                check(st.get("as_of") == "2026-10-30", f"#7B {fn} stats.as_of = วันที่พบมากสุด (ได้ {st.get('as_of')})")
     finally:
         _restore_docs()              # ล้าง test artifact + คืนของจริงเสมอ
 
 
+def test_scan_as_of_date():
+    print("scan_as_of_date (#7B · วันราคาปิดของรอบสแกน):")
+    check(rs.scan_as_of_date({}) is None, "ว่าง → None (ผู้อ่านถอยไปใช้ generated_at)")
+    check(rs.scan_as_of_date({"2026-10-30": 3000, "2026-10-29": 4}) == "2026-10-30", "วันที่พบมากสุด")
+    check(rs.scan_as_of_date({"2026-10-30": 3000, "2026-10-31": 1}) == "2026-10-30",
+          "ตัวเดียวที่มีแท่งเกินมา ไม่ดันวันไปข้างหน้า")
+    check(rs.scan_as_of_date({"2026-10-29": 5, "2026-10-30": 5}) == "2026-10-30", "เสมอกัน → วันใหม่กว่า")
+    check("as_of" not in rs._stats({"scanned": 1}, None), "ไม่รู้ as_of → ไม่เติม key (schema เดิม)")
+
+
+def test_scan_counts_bar_dates():
+    """scan() ต้องนับวันแท่งท้ายของทุกตัวลง bundle (ไม่งั้น merge ไม่มีอะไรให้เลือก as_of)"""
+    print("scan → bundle.bar_dates:")
+    def daily_ending(last_day, n=200):
+        out = _mk_daily(n)
+        for i, c in enumerate(out):
+            c["time"] = f"2026-{(i // 28) % 12 + 1:02d}-{(i % 28) + 1:02d}"
+        out[-1]["time"] = last_day
+        return out
+    feed = {"AAA": daily_ending("2026-10-30"), "BBB": daily_ending("2026-10-30"),
+            "HALT": daily_ending("2026-10-21")}
+    orig = (rs.fetch_daily, rs.load_universe, rs.fetch_index_weekly, rs.DOCS_DIR, rs._pace)
+    with tempfile.TemporaryDirectory() as tmp:
+        rs.fetch_daily = lambda sym, rng="5y", as_of=None: feed[sym]
+        rs.load_universe = lambda name: [{"symbol": s, "sector": None} for s in feed]
+        rs.fetch_index_weekly = lambda uni, as_of=None: []
+        rs.DOCS_DIR, rs._pace = tmp, (lambda t: 0)
+        try:
+            rs.scan("us-all", shard=(0, 1))
+            b = json.load(open(os.path.join(tmp, "us-all-shard0.json")))
+        finally:
+            rs.fetch_daily, rs.load_universe, rs.fetch_index_weekly, rs.DOCS_DIR, rs._pace = orig
+    check(b.get("bar_dates") == {"2026-10-30": 2, "2026-10-21": 1}, f"นับครบทุกตัว (ได้ {b.get('bar_dates')})")
+    check(rs.scan_as_of_date(b["bar_dates"]) == "2026-10-30", "ตัวที่หยุดเทรดไม่ลากวันของรอบ")
+
+
 def main():
     test_parse_shard()
+    test_scan_as_of_date()
+    test_scan_counts_bar_dates()
     test_shard_slicing()
     test_build_table_row()
     test_merge()
