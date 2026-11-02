@@ -16,6 +16,7 @@ import os
 import random
 import sys
 import time
+from collections import Counter
 from datetime import datetime, timezone
 from statistics import mean
 
@@ -107,6 +108,7 @@ def scan(universe, limit=None, throttle=0.25, shard=None):
     reversals = []
     levels = []
     table = []
+    bar_dates = Counter()      # #7B: วันแท่งปิดล่าสุดของแต่ละตัว → as_of = วันที่พบมากสุด (ป้าย "ราคาปิด <วัน>")
     for i, item in enumerate(symbols):
         symbol = item["symbol"]
         print(f"[scan] {i+1}/{total} {symbol}", end=" ", flush=True)
@@ -116,6 +118,7 @@ def scan(universe, limit=None, throttle=0.25, shard=None):
                 print(f"→ skip ({len(daily)} daily)")
                 time.sleep(_pace(throttle))
                 continue
+            bar_dates[daily[-1]["time"]] += 1
             weekly = resample(daily, "1wk")
             monthly = resample(daily, "1mo")
             row = evaluate(symbol, daily, weekly, monthly, index_weekly,
@@ -149,14 +152,16 @@ def scan(universe, limit=None, throttle=0.25, shard=None):
         time.sleep(_pace(throttle))
 
     if shard is not None:
-        write_shard_bundle(universe, shard[0], results, reversals, levels, table, total)
+        write_shard_bundle(universe, shard[0], results, reversals, levels, table, total,
+                           bar_dates=bar_dates)
     else:
+        as_of = scan_as_of_date(bar_dates)
         results.sort(key=lambda r: r["score"], reverse=True)
-        write_output(universe, results, total)
-        write_reversals(universe, reversals, total)
-        write_levels(universe, levels, total)
+        write_output(universe, results, total, as_of=as_of)
+        write_reversals(universe, reversals, total, as_of=as_of)
+        write_levels(universe, levels, total, as_of=as_of)
         if build_table:
-            write_table(universe, table, total)
+            write_table(universe, table, total, as_of=as_of)
     return results
 
 
@@ -238,7 +243,26 @@ TABLE_COLUMNS = ["sym", "close", "dv20m", "d_stage", "w_stage", "m_stage",
                  "s1", "r1", "rsi"]                 # Universe v2 (2026-10-04) — ต่อท้ายเท่านั้น
 
 
-def write_output(universe, results, scanned):
+def scan_as_of_date(bar_dates):
+    """#7B (11-02) · "ข้อมูลราคาปิดของวันไหน" ของรอบสแกน = วันแท่งปิดล่าสุดที่พบ **มากที่สุด** ในทุกตัวที่สแกน
+    ทำไมไม่ใช้ generated_at: สแกน 22:00Z = เช้าวันถัดไปตามเวลาไทย ⇒ ป้าย "อัปเดต 31 ต.ค." ทั้งที่ราคาคือปิด 30 ต.ค.
+    ทำไมใช้ "มากสุด" ไม่ใช่ "ใหม่สุด": หุ้นถูกพักการซื้อขาย/ข้อมูลค้างรายตัวไม่ควรลากวันของทั้งกระดาน
+      และตัวเดียวที่ Yahoo ให้แท่งเกินมาก็ไม่ควรดันวันไปข้างหน้า · เสมอกัน = วันใหม่กว่า
+    (#7C ตัดแท่งที่ยังไม่ปิดตั้งแต่ชั้นดึงแล้ว ⇒ ทุกคอลัมน์ในแถวมาจากแท่งวันนี้ชุดเดียวกัน — ป้ายวันเดียวจึงไม่ขัดตัวเลข)
+    bar_dates = {"YYYY-MM-DD": จำนวนตัว} · ว่าง = None (ผู้อ่านถอยไปใช้ generated_at เหมือนเดิม)"""
+    if not bar_dates:
+        return None
+    return max(bar_dates.items(), key=lambda kv: (kv[1], kv[0]))[0]
+
+
+def _stats(base, as_of):
+    """เติม as_of ลง stats เฉพาะเมื่อรู้ค่า — ไม่มี = schema เดิมเป๊ะ (ไฟล์เก่า/เทสเดิมไม่สะดุด)"""
+    if as_of:
+        base["as_of"] = as_of
+    return base
+
+
+def write_output(universe, results, scanned, as_of=None):
     os.makedirs(DOCS_DIR, exist_ok=True)
     grade_a = sum(1 for r in results if r["grade"] == "A")
     grade_b = sum(1 for r in results if r["grade"] == "B")
@@ -246,8 +270,8 @@ def write_output(universe, results, scanned):
         "schema_version": 1,
         "universe": universe,
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "stats": {"scanned": scanned, "passed_gates": len(results),
-                  "grade_a": grade_a, "grade_b": grade_b},
+        "stats": _stats({"scanned": scanned, "passed_gates": len(results),
+                         "grade_a": grade_a, "grade_b": grade_b}, as_of),
         "results": results,
     }
     path = os.path.join(DOCS_DIR, f"{universe}.json")
@@ -256,7 +280,7 @@ def write_output(universe, results, scanned):
     print(f"[scan] wrote {path} — {len(results)} setups (A={grade_a} B={grade_b})")
 
 
-def write_reversals(universe, reversals, scanned):
+def write_reversals(universe, reversals, scanned, as_of=None):
     """เขียน docs/<universe>-reversals.json (เรดาร์กลับตัว W3-11 P3)
     เรียงตามความชัด (confirmed ก่อน forming · confidence สูงก่อน) — frontend ตัด cap/gate เอง"""
     os.makedirs(DOCS_DIR, exist_ok=True)
@@ -268,8 +292,8 @@ def write_reversals(universe, reversals, scanned):
         "schema_version": 1,
         "universe": universe,
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "stats": {"scanned": scanned, "found": len(reversals),
-                  "tops": tops, "bottoms": bottoms},
+        "stats": _stats({"scanned": scanned, "found": len(reversals),
+                         "tops": tops, "bottoms": bottoms}, as_of),
         "results": reversals,
     }
     path = os.path.join(DOCS_DIR, f"{universe}-reversals.json")
@@ -278,7 +302,7 @@ def write_reversals(universe, reversals, scanned):
     print(f"[scan] wrote {path} — {len(reversals)} reversals (top={tops} bottom={bottoms})")
 
 
-def write_levels(universe, levels, scanned):
+def write_levels(universe, levels, scanned, as_of=None):
     """เขียน docs/<universe>-levels.json (Proximity Scanner — หุ้นใกล้แนวรับ/ต้าน/AVWAP-5y)
     เรียงตาม "ชิดแนวที่สุด" (|nearest.dist_pct| น้อยก่อน) — frontend แยกหมวด+gate เอง"""
     os.makedirs(DOCS_DIR, exist_ok=True)
@@ -290,8 +314,8 @@ def write_levels(universe, levels, scanned):
         "schema_version": 1,
         "universe": universe,
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "stats": {"scanned": scanned, "found": len(levels),
-                  "near_support": n_sup, "near_resistance": n_res, "near_avwap": n_avwap},
+        "stats": _stats({"scanned": scanned, "found": len(levels),
+                         "near_support": n_sup, "near_resistance": n_res, "near_avwap": n_avwap}, as_of),
         "results": levels,
     }
     path = os.path.join(DOCS_DIR, f"{universe}-levels.json")
@@ -301,7 +325,7 @@ def write_levels(universe, levels, scanned):
           f"(sup={n_sup} res={n_res} avwap={n_avwap})")
 
 
-def write_table(universe, table, scanned):
+def write_table(universe, table, scanned, as_of=None):
     """เขียน docs/<universe>-table.json (master quant table — ทุกตัว ไม่ใช่แค่ผ่าน gate)
     เรียง score มากก่อน (None ท้าย) แล้ว dv20 มากก่อน — frontend sort/filter เองได้"""
     os.makedirs(DOCS_DIR, exist_ok=True)
@@ -311,7 +335,7 @@ def write_table(universe, table, scanned):
         "universe": universe,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "columns": TABLE_COLUMNS,
-        "stats": {"scanned": scanned, "rows": len(table)},
+        "stats": _stats({"scanned": scanned, "rows": len(table)}, as_of),
         "results": table,
     }
     path = os.path.join(DOCS_DIR, f"{universe}-table.json")
@@ -320,7 +344,7 @@ def write_table(universe, table, scanned):
     print(f"[scan] wrote {path} — {len(table)} rows")
 
 
-def write_shard_bundle(universe, k, results, reversals, levels, table, scanned):
+def write_shard_bundle(universe, k, results, reversals, levels, table, scanned, bar_dates=None):
     """เขียน docs/<universe>-shard{k}.json = มัด 4 list ของ shard เดียว (artifact — ไม่ commit)
     merge_shards.py รวมทุก shard → 4 ไฟล์ final ตอน publish"""
     os.makedirs(DOCS_DIR, exist_ok=True)
@@ -329,6 +353,7 @@ def write_shard_bundle(universe, k, results, reversals, levels, table, scanned):
         "shard": k,
         "scanned": scanned,
         "generated_at": datetime.now(timezone.utc).isoformat(),
+        "bar_dates": dict(bar_dates or {}),     # #7B: merge รวมนับทุก shard แล้วค่อยเลือก as_of
         "results": results,
         "reversals": reversals,
         "levels": levels,
