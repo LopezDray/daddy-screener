@@ -10,8 +10,18 @@ MA_PERIOD = {"1d": 150, "1wk": 30, "1mo": 10}
 MIN_CANDLES = {"1d": 160, "1wk": 35, "1mo": 12}
 
 
+FAR_FROM_MA_PCT = 15   # 11-22 ราคาห่าง MA เกินนี้ = หลุดจากเส้นแล้ว (S4 ใต้ / S2 เหนือ) — ตรงกับ stage-engine.js
+
+
 def analyze_stage(candles, ma_period, tf):
-    """คืน dict {stage, confidence, price_vs_ma, slope4, pos_range} หรือ None ถ้าข้อมูลไม่พอ"""
+    """คืน dict {stage, confidence, price_vs_ma, slope4, pos_range} หรือ None ถ้าข้อมูลไม่พอ
+
+    🔁 11-22 (โอบ "แก้ให้ตรง"): **mirror ของ stage-engine.js saAnalyzeStage ทุกบรรทัด** (stage + confidence)
+       เดิม Python drift จากเว็บ 2 จุด (ไม่ได้ port W1-10 Fix#3/#5): เกณฑ์ slope 0.25 ทุก TF (เว็บ 0.25/0.6/1.2)
+       + แบ่ง S1/S3 ในโซน transition ด้วยตำแหน่งในช่วงอย่างเดียว (เว็บดูทิศเส้นด้วย) ⇒ สแกน ≠ หน้าเว็บ
+       + กฎ "ราคาห่างเส้นเกิน ±15%" (FAR_FROM_MA_PCT) · เหตุผลเต็มที่ stage-engine.js
+       ⚠️ แก้สูตรที่ไหน ต้องแก้ครบ 3 สำเนา (เว็บ · scripts/scan_nasdaq_screener.py · screener-repo/screener/stage.py)
+          tests/stage_far_from_ma_parity.mjs เทียบ stage + confidence ทั้ง 3 บนชุดสุ่มหลายร้อยชุด"""
     n = len(candles)
     if n < ma_period + 10:
         return None
@@ -40,8 +50,10 @@ def analyze_stage(candles, ma_period, tf):
     pos_range = (current_close - low52) / range52 * 100 if range52 > 0 else 50
 
     above_ma = price_vs_ma > 0
-    ma_rising = slope4 > 0.25
-    ma_falling = slope4 < -0.25
+    # เกณฑ์ "เส้นชัน" ต่อ TF (~√ความยาวแท่ง) — เท่าเว็บ (W1-10 Fix#5)
+    slope_th = 1.2 if tf == "1mo" else 0.6 if tf == "1wk" else 0.25
+    ma_rising = slope4 > slope_th
+    ma_falling = slope4 < -slope_th
     ma_flat = not ma_rising and not ma_falling
 
     if above_ma and ma_rising:
@@ -74,11 +86,25 @@ def analyze_stage(candles, ma_period, tf):
         if pos_range < 15: c += 5
         confidence = min(c, 95)
 
-    elif ma_flat or (not above_ma and ma_rising) or (above_ma and ma_falling):
-        if pos_range <= 50:
+    elif abs(price_vs_ma) > FAR_FROM_MA_PCT:
+        # 📏 11-22 ราคาหลุดจากเส้นเกิน ±15% = ไม่ใช่ฐาน/ยอด (เส้นตามราคาไม่ทัน) → ใต้เส้น S4 · เหนือเส้น S2
+        below = price_vs_ma < 0
+        stage = 4 if below else 2
+        c = 52
+        if abs(price_vs_ma) > 25: c += 8
+        if (pos_range < 30) if below else (pos_range > 70): c += 8
+        confidence = min(c, 80)
+
+    else:
+        # โซน transition (เท่าเว็บ W1-10 Fix#3): เส้นแบน หรือเส้นสวนทางกับฝั่งราคา
+        #   เส้นชี้ขึ้นแต่ราคาอยู่ใต้ = เริ่มงอขึ้น → S1 · เส้นชี้ลงแต่ราคาอยู่เหนือ = เริ่มหักหัว → S3
+        #   เส้นแบน → ดูตำแหน่งในช่วง 1 ปี (ครึ่งบน = ยอด · ครึ่งล่าง = ฐาน)
+        top_zone = ma_falling or (ma_flat and pos_range > 50)
+        if not top_zone:
             stage = 1
             c = 42
             if ma_flat:                c += 18
+            if ma_rising:              c += 10
             if pos_range < 30:         c += 16
             if abs(price_vs_ma) < 5:   c += 14
             confidence = min(c, 88)
@@ -86,12 +112,9 @@ def analyze_stage(candles, ma_period, tf):
             stage = 3
             c = 42
             if ma_flat and pos_range > 65:  c += 20
-            if above_ma and ma_falling:     c += 18
+            if ma_falling:                  c += 18
             if pos_range > 75:              c += 12
             confidence = min(c, 88)
-    else:
-        stage = 2 if above_ma else 4
-        confidence = 38
 
     return {"stage": stage, "confidence": confidence,
             "price_vs_ma": round(price_vs_ma, 2), "slope4": round(slope4, 2),
